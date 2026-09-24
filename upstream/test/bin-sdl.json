@@ -1,0 +1,12 @@
+{
+  "bin": true,
+  "name": "doom",
+  "description": "ansi-doom: doom.c plus the SDL3 host",
+  "includes": [
+    "../src"
+  ],
+  "sources": [
+    "../../doom.c",
+    "dg_sdl.c"
+  ]
+}
