@@ -5,7 +5,7 @@ need nothing but ISO C99 and seven host functions, and amalgamated into a
 single 49k-line translation unit. It exists as a test program for small,
 from-scratch C compilers: if your compiler builds `doom.c`, it runs DOOM.
 
-- No floating point. No 64-bit integers. No bitfields. No sound.
+- No floating point. No 64-bit integers. No bitfields. No `goto`. No sound.
 - No `#define`, `#if`, or local `#include`: the only preprocessor lines are
   eight ISO C `#include`s at the top.
 - Everything platform-specific is behind seven `extern` functions declared
@@ -98,14 +98,17 @@ so it doubles as a correctness test for a compiler: the game logic of the
 whole demo runs, and any miscompilation tends to end in `I_Error` or a
 different gametic count. `upstream/test/run-tests.sh` runs it with
 `~/git/c-compiler` and with clang+SDL3 (headless via `SDL_VIDEO_DRIVER=dummy`).
+It also checks fixed-point arithmetic, absence of `goto` and symbol collisions,
+and cast-finale timing (`upstream/test/cast_test.c`). The cast check covers
+attack-stop paths that the shareware demo cannot exercise.
 
 ## What a compiler has to handle
 
 Counts are occurrences in `doom.c`.
 
 Present: `struct` (186), `union` (3), `enum` (60), `typedef` (195),
-`static` (486, file scope and function scope), `extern` (491), `goto`
-(23), `switch` (109), `do`/`while`/`for`/`break`/`continue`, `?:` (220),
+`static` (487, file scope and function scope), `extern` (491), `switch`
+(109), `do`/`while`/`for`/`break`/`continue`, `?:` (220),
 `sizeof` (219, on types and expressions), function pointers (including
 tables of them and calls through unions), variadic functions (44 `...`, 9
 `va_list`, standard `va_start`/`va_arg`/`va_end`), string literals with
@@ -119,8 +122,8 @@ followed by `int x;` in the same file.
 Keywords that can be parsed and ignored: `const` (109), `register` (14),
 `inline` (15, on static functions), `signed`.
 
-Absent: `float`, `double`, `long long`, bitfields, VLAs, designated
-initializers, compound literals, wide strings, `__attribute__`,
+Absent: `goto`, statement labels (other than `case`/`default`), `float`,
+`double`, `long long`, bitfields, VLAs, designated initializers, compound literals, wide strings, `__attribute__`,
 `__builtin_*`, `volatile`, inline asm.
 
 Types: `char` 1, `short` 2, `int`/`long`/`enum`/pointer 4 (32-bit target;
@@ -144,9 +147,27 @@ the patched one; `diff -ru upstream/orig upstream/src` shows everything.
 | `doomfeatures.h` | `#undef FEATURE_SOUND`; `dg_sound.c` and the OPL emulator dropped. | no sound |
 | `main.c` | The SDL platform code moved out to `upstream/test/dg_sdl.c`; `main` is `doomgeneric_Create` + `for (;;) doomgeneric_Tick();`. | the host owns the platform |
 | `wi_stuff.c`, `am_map.c` | `anim_t`/`anims`/`load_callback_t` -> `wi_*`; `plr` -> `am_plr`. | file-local names that clash in one translation unit |
+| `f_finale.c`, `p_enemy.c`, `p_map.c`, `r_bsp.c` | All 23 `goto`s in eight functions replaced with branches, early returns, a bounded loop, and one small helper. | no labels or `goto` support needed in the compiler |
 
-Gotos, unions, the blocking screen wipe, config files, savegames, demo
-playback and command-line parsing are all still there.
+The control-flow rewrite preserves the existing behavior:
+
+- `F_CastTicker` uses `F_StopCastAttack` plus early returns at both former
+  jumps; stopping an attack still leaves `casttics` unchanged.
+- `A_Look` tracks whether a sound target was accepted before searching for
+  players; `A_Chase` guards missile attacks with short-circuit conditions.
+- `PTR_SlideTraverse` returns early for passable lines; `P_SlideMove` makes
+  at most two slide attempts before the original stairstep fallback.
+- `PTR_ShootTraverse` tracks whether a line blocks the shot, checking the
+  floor before the ceiling and preserving missing-back-sector handling.
+- `R_ClipSolidWallSegment` breaks out of its range scan before shared
+  compaction; `R_AddLine` selects solid/pass clipping with early returns.
+
+Checks retain their original evaluation order, including calls that update
+state or consume random numbers. `upstream/orig/` retains the original
+labels and jumps for comparison.
+
+Unions, the blocking screen wipe, config files, savegames, demo playback
+and command-line parsing are all still there.
 
 ## Regenerating doom.c
 

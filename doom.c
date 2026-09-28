@@ -21280,6 +21280,13 @@ void F_StartCast (void)
     castattacking = false;
     S_ChangeMusic(mus_evil, true);
 }
+// Keep casttics unchanged when stopping an attack, as in the original.
+static void F_StopCastAttack (void)
+{
+    castattacking = false;
+    castframes = 0;
+    caststate = &states[mobjinfo[castorder[castnum].type].seestate];
+}
 //
 // F_CastTicker
 //
@@ -21305,7 +21312,10 @@ void F_CastTicker (void)
     {
  // just advance to next state in animation
  if (caststate == &states[S_PLAY_ATK1])
-     goto stopattack; // Oh, gross hack!
+ {
+     F_StopCastAttack ();
+     return;
+ }
  st = caststate->nextstate;
  caststate = &states[st];
  castframes++;
@@ -21367,17 +21377,13 @@ void F_CastTicker (void)
  if (castframes == 24
      || caststate == &states[mobjinfo[castorder[castnum].type].seestate] )
  {
-      goto stopattack;
+     F_StopCastAttack ();
+     return;
  }
     }
     casttics = caststate->tics;
     if (casttics == -1)
  casttics = 15;
-    return;
-  stopattack:
-    castattacking = false;
-    castframes = 0;
-    caststate = &states[mobjinfo[castorder[castnum].type].seestate];
 }
 //
 // F_CastResponder
@@ -27906,24 +27912,18 @@ void A_KeenDie (mobj_t* mo)
 void A_Look (mobj_t* actor)
 {
     mobj_t* targ;
+    boolean heard = false;
     actor->threshold = 0; // any shot will wake up
     targ = actor->subsector->sector->soundtarget;
-    if (targ
- && (targ->flags & MF_SHOOTABLE) )
+    if (targ && (targ->flags & MF_SHOOTABLE))
     {
- actor->target = targ;
- if ( actor->flags & MF_AMBUSH )
- {
-     if (P_CheckSight (actor, actor->target))
-  goto seeyou;
- }
- else
-     goto seeyou;
+        actor->target = targ;
+        heard = !(actor->flags & MF_AMBUSH)
+            || P_CheckSight (actor, actor->target);
     }
-    if (!P_LookForPlayers (actor, false) )
- return;
+    if (!heard && !P_LookForPlayers (actor, false))
+        return;
     // go into chase state
-  seeyou:
     if (actor->info->seesound)
     {
  int sound;
@@ -28011,21 +28011,14 @@ void A_Chase (mobj_t* actor)
  return;
     }
     // check for missile attack
-    if (actor->info->missilestate)
+    if (actor->info->missilestate
+        && !(gameskill < sk_nightmare && !fastparm && actor->movecount)
+        && P_CheckMissileRange (actor))
     {
- if (gameskill < sk_nightmare
-     && !fastparm && actor->movecount)
- {
-     goto nomissile;
- }
- if (!P_CheckMissileRange (actor))
-     goto nomissile;
  P_SetMobjState (actor, actor->info->missilestate);
  actor->flags |= MF_JUSTATTACKED;
  return;
     }
-    // ?
-  nomissile:
     // possibly choose another target
     if (netgame
  && !actor->threshold
@@ -31036,21 +31029,20 @@ boolean PTR_SlideTraverse (intercept_t* in)
      // don't hit the back side
      return true;
  }
- goto isblocking;
     }
-    // set openrange, opentop, openbottom
-    P_LineOpening (li);
-    if (openrange < slidemo->height)
- goto isblocking; // doesn't fit
-    if (opentop - slidemo->z < slidemo->height)
- goto isblocking; // mobj is too high
-    if (openbottom - slidemo->z > 24*(1<<16) )
- goto isblocking; // too big a step up
-    // this line doesn't block movement
-    return true;
-    // the line does block movement,
-    // see if it is closer than best so far
-  isblocking:
+    else
+    {
+        // Set openrange, opentop, openbottom for two-sided lines only.
+        P_LineOpening (li);
+        if (openrange >= slidemo->height
+            && opentop - slidemo->z >= slidemo->height
+            && openbottom - slidemo->z <= 24*(1<<16))
+        {
+            // This line doesn't block movement.
+            return true;
+        }
+    }
+    // The line blocks movement; see if it is closer than best so far.
     if (in->frac < bestslidefrac)
     {
  secondslidefrac = bestslidefrac;
@@ -31079,73 +31071,69 @@ void P_SlideMove (mobj_t* mo)
     fixed_t newy;
     int hitcount;
     slidemo = mo;
-    hitcount = 0;
-  retry:
-    if (++hitcount == 3)
- goto stairstep; // don't loop forever
-    // trace along the three leading corners
-    if (mo->momx > 0)
+    // Try sliding twice before falling back to stairstepping.
+    for (hitcount = 0; hitcount < 2; hitcount++)
     {
- leadx = mo->x + mo->radius;
- trailx = mo->x - mo->radius;
+        // trace along the three leading corners
+        if (mo->momx > 0)
+        {
+            leadx = mo->x + mo->radius;
+            trailx = mo->x - mo->radius;
+        }
+        else
+        {
+            leadx = mo->x - mo->radius;
+            trailx = mo->x + mo->radius;
+        }
+        if (mo->momy > 0)
+        {
+            leady = mo->y + mo->radius;
+            traily = mo->y - mo->radius;
+        }
+        else
+        {
+            leady = mo->y - mo->radius;
+            traily = mo->y + mo->radius;
+        }
+        bestslidefrac = (1<<16)+1;
+        P_PathTraverse ( leadx, leady, leadx+mo->momx, leady+mo->momy,
+                         1, PTR_SlideTraverse );
+        P_PathTraverse ( trailx, leady, trailx+mo->momx, leady+mo->momy,
+                         1, PTR_SlideTraverse );
+        P_PathTraverse ( leadx, traily, leadx+mo->momx, traily+mo->momy,
+                         1, PTR_SlideTraverse );
+        // move up to the wall
+        if (bestslidefrac == (1<<16)+1)
+        {
+            // The move must have hit the middle, so stairstep.
+            break;
+        }
+        // fudge a bit to make sure it doesn't hit
+        bestslidefrac -= 0x800;
+        if (bestslidefrac > 0)
+        {
+            newx = FixedMul (mo->momx, bestslidefrac);
+            newy = FixedMul (mo->momy, bestslidefrac);
+            if (!P_TryMove (mo, mo->x+newx, mo->y+newy))
+                break;
+        }
+        // Now continue along the wall.
+        // First calculate remainder.
+        bestslidefrac = (1<<16)-(bestslidefrac+0x800);
+        if (bestslidefrac > (1<<16))
+            bestslidefrac = (1<<16);
+        if (bestslidefrac <= 0)
+            return;
+        tmxmove = FixedMul (mo->momx, bestslidefrac);
+        tmymove = FixedMul (mo->momy, bestslidefrac);
+        P_HitSlideLine (bestslideline); // clip the moves
+        mo->momx = tmxmove;
+        mo->momy = tmymove;
+        if (P_TryMove (mo, mo->x+tmxmove, mo->y+tmymove))
+            return;
     }
-    else
-    {
- leadx = mo->x - mo->radius;
- trailx = mo->x + mo->radius;
-    }
-    if (mo->momy > 0)
-    {
- leady = mo->y + mo->radius;
- traily = mo->y - mo->radius;
-    }
-    else
-    {
- leady = mo->y - mo->radius;
- traily = mo->y + mo->radius;
-    }
-    bestslidefrac = (1<<16)+1;
-    P_PathTraverse ( leadx, leady, leadx+mo->momx, leady+mo->momy,
-       1, PTR_SlideTraverse );
-    P_PathTraverse ( trailx, leady, trailx+mo->momx, leady+mo->momy,
-       1, PTR_SlideTraverse );
-    P_PathTraverse ( leadx, traily, leadx+mo->momx, traily+mo->momy,
-       1, PTR_SlideTraverse );
-    // move up to the wall
-    if (bestslidefrac == (1<<16)+1)
-    {
- // the move most have hit the middle, so stairstep
-    goto stairstep;
-    }
-    // fudge a bit to make sure it doesn't hit
-    bestslidefrac -= 0x800;
-    if (bestslidefrac > 0)
-    {
- newx = FixedMul (mo->momx, bestslidefrac);
- newy = FixedMul (mo->momy, bestslidefrac);
- if (!P_TryMove (mo, mo->x+newx, mo->y+newy))
-     goto stairstep;
-    }
-    // Now continue along the wall.
-    // First calculate remainder.
-    bestslidefrac = (1<<16)-(bestslidefrac+0x800);
-    if (bestslidefrac > (1<<16))
- bestslidefrac = (1<<16);
-    if (bestslidefrac <= 0)
- return;
-    tmxmove = FixedMul (mo->momx, bestslidefrac);
-    tmymove = FixedMul (mo->momy, bestslidefrac);
-    P_HitSlideLine (bestslideline); // clip the moves
-    mo->momx = tmxmove;
-    mo->momy = tmymove;
-    if (!P_TryMove (mo, mo->x+tmxmove, mo->y+tmymove))
-    {
- goto retry;
-    }
-    return;
-  stairstep:
- if (!P_TryMove (mo, mo->x, mo->y + mo->momy))
-     P_TryMove (mo, mo->x + mo->momx, mo->y);
+    if (!P_TryMove (mo, mo->x, mo->y + mo->momy))
+        P_TryMove (mo, mo->x + mo->momx, mo->y);
 }
 //
 // P_LineAttack
@@ -31247,41 +31235,30 @@ boolean PTR_ShootTraverse (intercept_t* in)
  li = in->d.line;
  if (li->special)
      P_ShootSpecialLine (shootthing, li);
- if ( !(li->flags & 4) )
-     goto hitline;
- // crosses a two sided line
- P_LineOpening (li);
- dist = FixedMul (attackrange, in->frac);
-        // e6y: emulation of missed back side on two-sided lines.
-        // backsector can be NULL when emulating missing back side.
-        if (li->backsector == NULL)
+        if (li->flags & 4)
         {
-            slope = FixedDiv (openbottom - shootz , dist);
-            if (slope > aimslope)
-                goto hitline;
-            slope = FixedDiv (opentop - shootz , dist);
-            if (slope < aimslope)
-                goto hitline;
-        }
-        else
-        {
-            if (li->frontsector->floorheight != li->backsector->floorheight)
+            boolean blocked = false;
+            P_LineOpening (li);
+            dist = FixedMul (attackrange, in->frac);
+            // backsector can be NULL when emulating a missing back side.
+            if (li->backsector == NULL
+                || li->frontsector->floorheight != li->backsector->floorheight)
             {
-                slope = FixedDiv (openbottom - shootz , dist);
-                if (slope > aimslope)
-                    goto hitline;
+                slope = FixedDiv (openbottom - shootz, dist);
+                blocked = slope > aimslope;
             }
-            if (li->frontsector->ceilingheight != li->backsector->ceilingheight)
+            // Preserve the early exit: don't check the ceiling if the floor blocks.
+            if (!blocked
+                && (li->backsector == NULL
+                    || li->frontsector->ceilingheight != li->backsector->ceilingheight))
             {
-                slope = FixedDiv (opentop - shootz , dist);
-                if (slope < aimslope)
-                    goto hitline;
+                slope = FixedDiv (opentop - shootz, dist);
+                blocked = slope < aimslope;
             }
+            if (!blocked)
+                return true; // shot continues
         }
- // shot continues
- return true;
- // hit line
-      hitline:
+        // Hit line.
  // position a bit closer
  frac = in->frac - FixedDiv (4*(1<<16),attackrange);
  x = trace.x + FixedMul (trace.dx, frac);
@@ -38800,16 +38777,17 @@ R_ClipSolidWallSegment
      // Bottom is contained in next.
      // Adjust the clip size.
      start->last = next->last;
-     goto crunch;
+     break;
  }
     }
-    // There is a fragment after *next.
-    R_StoreWallRange (next->last + 1, last);
-    // Adjust the clip size.
-    start->last = last;
+    if (last > next->last)
+    {
+        // There is a fragment after *next.
+        R_StoreWallRange (next->last + 1, last);
+        start->last = last;
+    }
     // Remove start+1 to next from the clip list,
     // because start now covers their area.
-  crunch:
     if (next == start)
     {
  // Post just extended past the bottom of one post.
@@ -38931,34 +38909,25 @@ void R_AddLine (seg_t* line)
     if (x1 == x2)
  return;
     backsector = line->backsector;
-    // Single sided line?
-    if (!backsector)
- goto clipsolid;
-    // Closed door.
-    if (backsector->ceilingheight <= frontsector->floorheight
- || backsector->floorheight >= frontsector->ceilingheight)
- goto clipsolid;
-    // Window.
-    if (backsector->ceilingheight != frontsector->ceilingheight
- || backsector->floorheight != frontsector->floorheight)
- goto clippass;
-    // Reject empty lines used for triggers
-    //  and special events.
-    // Identical floor and ceiling on both sides,
-    // identical light levels on both sides,
-    // and no middle texture.
-    if (backsector->ceilingpic == frontsector->ceilingpic
- && backsector->floorpic == frontsector->floorpic
- && backsector->lightlevel == frontsector->lightlevel
- && curline->sidedef->midtexture == 0)
+    // Single-sided line or closed door.
+    if (!backsector
+        || backsector->ceilingheight <= frontsector->floorheight
+        || backsector->floorheight >= frontsector->ceilingheight)
     {
- return;
+        R_ClipSolidWallSegment (x1, x2-1);
+        return;
     }
-  clippass:
+    // Reject empty trigger lines. Windows always need pass clipping.
+    if (backsector->ceilingheight == frontsector->ceilingheight
+        && backsector->floorheight == frontsector->floorheight
+        && backsector->ceilingpic == frontsector->ceilingpic
+        && backsector->floorpic == frontsector->floorpic
+        && backsector->lightlevel == frontsector->lightlevel
+        && curline->sidedef->midtexture == 0)
+    {
+        return;
+    }
     R_ClipPassWallSegment (x1, x2-1);
-    return;
-  clipsolid:
-    R_ClipSolidWallSegment (x1, x2-1);
 }
 //
 // R_CheckBBox

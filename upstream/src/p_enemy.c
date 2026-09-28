@@ -588,31 +588,23 @@ void A_KeenDie (mobj_t* mo)
 //
 void A_Look (mobj_t* actor)
 {
-    mobj_t*	targ;
-	
-    actor->threshold = 0;	// any shot will wake up
+    mobj_t* targ;
+    boolean heard = false;
+
+    actor->threshold = 0; // any shot will wake up
     targ = actor->subsector->sector->soundtarget;
 
-    if (targ
-	&& (targ->flags & MF_SHOOTABLE) )
+    if (targ && (targ->flags & MF_SHOOTABLE))
     {
-	actor->target = targ;
-
-	if ( actor->flags & MF_AMBUSH )
-	{
-	    if (P_CheckSight (actor, actor->target))
-		goto seeyou;
-	}
-	else
-	    goto seeyou;
+        actor->target = targ;
+        heard = !(actor->flags & MF_AMBUSH)
+            || P_CheckSight (actor, actor->target);
     }
-	
-	
-    if (!P_LookForPlayers (actor, false) )
-	return;
-		
+
+    if (!heard && !P_LookForPlayers (actor, false))
+        return;
+
     // go into chase state
-  seeyou:
     if (actor->info->seesound)
     {
 	int		sound;
@@ -718,24 +710,15 @@ void A_Chase (mobj_t*	actor)
     }
     
     // check for missile attack
-    if (actor->info->missilestate)
+    if (actor->info->missilestate
+        && !(gameskill < sk_nightmare && !fastparm && actor->movecount)
+        && P_CheckMissileRange (actor))
     {
-	if (gameskill < sk_nightmare
-	    && !fastparm && actor->movecount)
-	{
-	    goto nomissile;
-	}
-	
-	if (!P_CheckMissileRange (actor))
-	    goto nomissile;
-	
 	P_SetMobjState (actor, actor->info->missilestate);
 	actor->flags |= MF_JUSTATTACKED;
 	return;
     }
 
-    // ?
-  nomissile:
     // possibly choose another target
     if (netgame
 	&& !actor->threshold

@@ -1,5 +1,6 @@
 #!/bin/bash
-# Rebuilds doom.c and checks it three ways:
+# Rebuilds doom.c, checks for gotos/name collisions and cast-finale timing,
+# then checks it three ways:
 #   1. FixedMul/FixedDiv (32-bit rewrite) against the 64-bit originals
 #   2. ~/git/c-compiler: compile doom.c + dg_sdl.c, run -timedemo demo1 headless
 #   3. system clang + SDL3: compile natively, run -timedemo demo1 with SDL's
@@ -17,6 +18,16 @@ SDL3_LIB=${SDL3_LIB:-$HOME/git/small/build/native/sdl/lib}
 
 ./build.sh
 ./build.sh --collisions | grep . && { echo "FAIL: file-local name collisions"; exit 1; }
+
+if grep -nE '(^|[^[:alnum:]_])goto([^[:alnum:]_]|$)' ../doom.c; then
+    echo "FAIL: goto in amalgamated source"
+    exit 1
+fi
+
+echo "== cast-finale timing"
+clang -std=c99 -O1 -Wno-deprecated-non-prototype -Wno-pointer-to-int-cast \
+      -Wno-absolute-value -Wno-switch -o build/cast_test test/cast_test.c
+./build/cast_test
 
 echo "== 1. fixed-point math"
 {

@@ -676,27 +676,21 @@ boolean PTR_SlideTraverse (intercept_t* in)
 	    // don't hit the back side
 	    return true;		
 	}
-	goto isblocking;
+    }
+    else
+    {
+        // Set openrange, opentop, openbottom for two-sided lines only.
+        P_LineOpening (li);
+        if (openrange >= slidemo->height
+            && opentop - slidemo->z >= slidemo->height
+            && openbottom - slidemo->z <= 24*FRACUNIT)
+        {
+            // This line doesn't block movement.
+            return true;
+        }
     }
 
-    // set openrange, opentop, openbottom
-    P_LineOpening (li);
-    
-    if (openrange < slidemo->height)
-	goto isblocking;		// doesn't fit
-		
-    if (opentop - slidemo->z < slidemo->height)
-	goto isblocking;		// mobj is too high
-
-    if (openbottom - slidemo->z > 24*FRACUNIT )
-	goto isblocking;		// too big a step up
-
-    // this line doesn't block movement
-    return true;		
-	
-    // the line does block movement,
-    // see if it is closer than best so far
-  isblocking:		
+    // The line blocks movement; see if it is closer than best so far.
     if (in->frac < bestslidefrac)
     {
 	secondslidefrac = bestslidefrac;
@@ -730,91 +724,83 @@ void P_SlideMove (mobj_t* mo)
     int			hitcount;
 		
     slidemo = mo;
-    hitcount = 0;
-    
-  retry:
-    if (++hitcount == 3)
-	goto stairstep;		// don't loop forever
+    // Try sliding twice before falling back to stairstepping.
+    for (hitcount = 0; hitcount < 2; hitcount++)
+    {
+        // trace along the three leading corners
+        if (mo->momx > 0)
+        {
+            leadx = mo->x + mo->radius;
+            trailx = mo->x - mo->radius;
+        }
+        else
+        {
+            leadx = mo->x - mo->radius;
+            trailx = mo->x + mo->radius;
+        }
 
-    
-    // trace along the three leading corners
-    if (mo->momx > 0)
-    {
-	leadx = mo->x + mo->radius;
-	trailx = mo->x - mo->radius;
-    }
-    else
-    {
-	leadx = mo->x - mo->radius;
-	trailx = mo->x + mo->radius;
-    }
-	
-    if (mo->momy > 0)
-    {
-	leady = mo->y + mo->radius;
-	traily = mo->y - mo->radius;
-    }
-    else
-    {
-	leady = mo->y - mo->radius;
-	traily = mo->y + mo->radius;
-    }
-		
-    bestslidefrac = FRACUNIT+1;
-	
-    P_PathTraverse ( leadx, leady, leadx+mo->momx, leady+mo->momy,
-		     PT_ADDLINES, PTR_SlideTraverse );
-    P_PathTraverse ( trailx, leady, trailx+mo->momx, leady+mo->momy,
-		     PT_ADDLINES, PTR_SlideTraverse );
-    P_PathTraverse ( leadx, traily, leadx+mo->momx, traily+mo->momy,
-		     PT_ADDLINES, PTR_SlideTraverse );
-    
-    // move up to the wall
-    if (bestslidefrac == FRACUNIT+1)
-    {
-	// the move most have hit the middle, so stairstep
-    goto stairstep;
-    }
+        if (mo->momy > 0)
+        {
+            leady = mo->y + mo->radius;
+            traily = mo->y - mo->radius;
+        }
+        else
+        {
+            leady = mo->y - mo->radius;
+            traily = mo->y + mo->radius;
+        }
 
-    // fudge a bit to make sure it doesn't hit
-    bestslidefrac -= 0x800;	
-    if (bestslidefrac > 0)
-    {
-	newx = FixedMul (mo->momx, bestslidefrac);
-	newy = FixedMul (mo->momy, bestslidefrac);
-	
-	if (!P_TryMove (mo, mo->x+newx, mo->y+newy))
-	    goto stairstep;
-    }
-    
-    // Now continue along the wall.
-    // First calculate remainder.
-    bestslidefrac = FRACUNIT-(bestslidefrac+0x800);
-    
-    if (bestslidefrac > FRACUNIT)
-	bestslidefrac = FRACUNIT;
-    
-    if (bestslidefrac <= 0)
-	return;
-    
-    tmxmove = FixedMul (mo->momx, bestslidefrac);
-    tmymove = FixedMul (mo->momy, bestslidefrac);
+        bestslidefrac = FRACUNIT+1;
 
-    P_HitSlideLine (bestslideline);	// clip the moves
+        P_PathTraverse ( leadx, leady, leadx+mo->momx, leady+mo->momy,
+                         PT_ADDLINES, PTR_SlideTraverse );
+        P_PathTraverse ( trailx, leady, trailx+mo->momx, leady+mo->momy,
+                         PT_ADDLINES, PTR_SlideTraverse );
+        P_PathTraverse ( leadx, traily, leadx+mo->momx, traily+mo->momy,
+                         PT_ADDLINES, PTR_SlideTraverse );
 
-    mo->momx = tmxmove;
-    mo->momy = tmymove;
-		
-    if (!P_TryMove (mo, mo->x+tmxmove, mo->y+tmymove))
-    {
-	goto retry;
+        // move up to the wall
+        if (bestslidefrac == FRACUNIT+1)
+        {
+            // The move must have hit the middle, so stairstep.
+            break;
+        }
+
+        // fudge a bit to make sure it doesn't hit
+        bestslidefrac -= 0x800;
+        if (bestslidefrac > 0)
+        {
+            newx = FixedMul (mo->momx, bestslidefrac);
+            newy = FixedMul (mo->momy, bestslidefrac);
+
+            if (!P_TryMove (mo, mo->x+newx, mo->y+newy))
+                break;
+        }
+
+        // Now continue along the wall.
+        // First calculate remainder.
+        bestslidefrac = FRACUNIT-(bestslidefrac+0x800);
+
+        if (bestslidefrac > FRACUNIT)
+            bestslidefrac = FRACUNIT;
+
+        if (bestslidefrac <= 0)
+            return;
+
+        tmxmove = FixedMul (mo->momx, bestslidefrac);
+        tmymove = FixedMul (mo->momy, bestslidefrac);
+
+        P_HitSlideLine (bestslideline);     // clip the moves
+
+        mo->momx = tmxmove;
+        mo->momy = tmymove;
+
+        if (P_TryMove (mo, mo->x+tmxmove, mo->y+tmymove))
+            return;
     }
 
-    return;
-
-  stairstep:
-	if (!P_TryMove (mo, mo->x, mo->y + mo->momy))
-	    P_TryMove (mo, mo->x + mo->momx, mo->y);
+    if (!P_TryMove (mo, mo->x, mo->y + mo->momy))
+        P_TryMove (mo, mo->x + mo->momx, mo->y);
 }
 
 
@@ -951,50 +937,35 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	if (li->special)
 	    P_ShootSpecialLine (shootthing, li);
 
-	if ( !(li->flags & ML_TWOSIDED) )
-	    goto hitline;
-	
-	// crosses a two sided line
-	P_LineOpening (li);
-		
-	dist = FixedMul (attackrange, in->frac);
-
-        // e6y: emulation of missed back side on two-sided lines.
-        // backsector can be NULL when emulating missing back side.
-
-        if (li->backsector == NULL)
+        if (li->flags & ML_TWOSIDED)
         {
-            slope = FixedDiv (openbottom - shootz , dist);
-            if (slope > aimslope)
-                goto hitline;
+            boolean blocked = false;
 
-            slope = FixedDiv (opentop - shootz , dist);
-            if (slope < aimslope)
-                goto hitline;
-        }
-        else
-        {
-            if (li->frontsector->floorheight != li->backsector->floorheight)
+            P_LineOpening (li);
+            dist = FixedMul (attackrange, in->frac);
+
+            // backsector can be NULL when emulating a missing back side.
+            if (li->backsector == NULL
+                || li->frontsector->floorheight != li->backsector->floorheight)
             {
-                slope = FixedDiv (openbottom - shootz , dist);
-                if (slope > aimslope)
-                    goto hitline;
+                slope = FixedDiv (openbottom - shootz, dist);
+                blocked = slope > aimslope;
             }
 
-            if (li->frontsector->ceilingheight != li->backsector->ceilingheight)
+            // Preserve the early exit: don't check the ceiling if the floor blocks.
+            if (!blocked
+                && (li->backsector == NULL
+                    || li->frontsector->ceilingheight != li->backsector->ceilingheight))
             {
-                slope = FixedDiv (opentop - shootz , dist);
-                if (slope < aimslope)
-                    goto hitline;
+                slope = FixedDiv (opentop - shootz, dist);
+                blocked = slope < aimslope;
             }
+
+            if (!blocked)
+                return true; // shot continues
         }
 
-	// shot continues
-	return true;
-	
-	
-	// hit line
-      hitline:
+        // Hit line.
 	// position a bit closer
 	frac = in->frac - FixedDiv (4*FRACUNIT,attackrange);
 	x = trace.x + FixedMul (trace.dx, frac);

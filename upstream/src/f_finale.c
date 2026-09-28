@@ -352,6 +352,14 @@ void F_StartCast (void)
 }
 
 
+// Keep casttics unchanged when stopping an attack, as in the original.
+static void F_StopCastAttack (void)
+{
+    castattacking = false;
+    castframes = 0;
+    caststate = &states[mobjinfo[castorder[castnum].type].seestate];
+}
+
 //
 // F_CastTicker
 //
@@ -379,7 +387,10 @@ void F_CastTicker (void)
     {
 	// just advance to next state in animation
 	if (caststate == &states[S_PLAY_ATK1])
-	    goto stopattack;	// Oh, gross hack!
+	{
+	    F_StopCastAttack ();
+	    return;
+	}
 	st = caststate->nextstate;
 	caststate = &states[st];
 	castframes++;
@@ -445,20 +456,14 @@ void F_CastTicker (void)
 	if (castframes == 24
 	    ||	caststate == &states[mobjinfo[castorder[castnum].type].seestate] )
 	{
-      goto stopattack;
+	    F_StopCastAttack ();
+	    return;
 	}
     }
 	
     casttics = caststate->tics;
     if (casttics == -1)
 	casttics = 15;
-
-    return;
-
-  stopattack:
-    castattacking = false;
-    castframes = 0;
-    caststate = &states[mobjinfo[castorder[castnum].type].seestate];
 }
 
 

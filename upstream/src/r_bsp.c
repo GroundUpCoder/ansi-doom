@@ -149,18 +149,19 @@ R_ClipSolidWallSegment
 	    // Bottom is contained in next.
 	    // Adjust the clip size.
 	    start->last = next->last;	
-	    goto crunch;
+	    break;
 	}
     }
 	
-    // There is a fragment after *next.
-    R_StoreWallRange (next->last + 1, last);
-    // Adjust the clip size.
-    start->last = last;
-	
+    if (last > next->last)
+    {
+        // There is a fragment after *next.
+        R_StoreWallRange (next->last + 1, last);
+        start->last = last;
+    }
+
     // Remove start+1 to next from the clip list,
     // because start now covers their area.
-  crunch:
     if (next == start)
     {
 	// Post just extended past the bottom of one post.
@@ -312,40 +313,27 @@ void R_AddLine (seg_t*	line)
 	
     backsector = line->backsector;
 
-    // Single sided line?
-    if (!backsector)
-	goto clipsolid;		
-
-    // Closed door.
-    if (backsector->ceilingheight <= frontsector->floorheight
-	|| backsector->floorheight >= frontsector->ceilingheight)
-	goto clipsolid;		
-
-    // Window.
-    if (backsector->ceilingheight != frontsector->ceilingheight
-	|| backsector->floorheight != frontsector->floorheight)
-	goto clippass;	
-		
-    // Reject empty lines used for triggers
-    //  and special events.
-    // Identical floor and ceiling on both sides,
-    // identical light levels on both sides,
-    // and no middle texture.
-    if (backsector->ceilingpic == frontsector->ceilingpic
-	&& backsector->floorpic == frontsector->floorpic
-	&& backsector->lightlevel == frontsector->lightlevel
-	&& curline->sidedef->midtexture == 0)
+    // Single-sided line or closed door.
+    if (!backsector
+        || backsector->ceilingheight <= frontsector->floorheight
+        || backsector->floorheight >= frontsector->ceilingheight)
     {
-	return;
+        R_ClipSolidWallSegment (x1, x2-1);
+        return;
     }
-    
-				
-  clippass:
-    R_ClipPassWallSegment (x1, x2-1);	
-    return;
-		
-  clipsolid:
-    R_ClipSolidWallSegment (x1, x2-1);
+
+    // Reject empty trigger lines. Windows always need pass clipping.
+    if (backsector->ceilingheight == frontsector->ceilingheight
+        && backsector->floorheight == frontsector->floorheight
+        && backsector->ceilingpic == frontsector->ceilingpic
+        && backsector->floorpic == frontsector->floorpic
+        && backsector->lightlevel == frontsector->lightlevel
+        && curline->sidedef->midtexture == 0)
+    {
+        return;
+    }
+
+    R_ClipPassWallSegment (x1, x2-1);
 }
 
 
