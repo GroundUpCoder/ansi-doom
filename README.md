@@ -7,7 +7,7 @@ from-scratch C compilers: if your compiler builds `doom.c`, it runs DOOM.
 
 - No floating point. No 64-bit integers. No bitfields. No `goto`. No sound.
 - No `#define`, `#if`, or local `#include`: the only preprocessor lines are
-  eight ISO C `#include`s at the top.
+  nine ISO C `#include`s at the top.
 - Everything platform-specific is behind seven `extern` functions declared
   right after the includes.
 
@@ -139,7 +139,8 @@ the patched one; `diff -ru upstream/orig upstream/src` shows everything.
 | Where | Change | Why |
 |---|---|---|
 | `m_fixed.c` | `FixedMul`/`FixedDiv` rewritten with 32-bit unsigned math (16x16 split, shift-subtract division). Bit-exact with the `int64_t` originals (`upstream/test/fixed_test.c`, 20M random pairs). | no 64-bit ints |
-| `i_video.c/h`, `v_video.c`, `m_config.c/h`, `i_sound.c`, `g_game.c` | `mouse_acceleration` and `libsamplerate_scale` become `int`; `M_GetFloatVariable` and the float config cases removed; timedemo fps printed as an int. | no floats (that was every real use; the rest were `#if 0`) |
+| `i_video.c/h`, `v_video.c`, `m_config.c/h`, `i_sound.c`, `g_game.c` | `mouse_acceleration` and `libsamplerate_scale` become `int`; `M_GetFloatVariable` and the float config cases removed; timedemo fps printed as an int. | no runtime floating point |
+| `am_map.c` | Automap triangle coordinates and scale/zoom constants resolved to integer values for `FRACUNIT = 65536`, preserving truncation toward zero. Original expressions are recorded in comments. Removes all 22 remaining floating-point literal occurrences from the amalgamated code. | no floating-point parsing or constant evaluation required |
 | `i_video.h` | `struct color` bitfields (`uint32_t r:8` ...) become `uint8_t` fields, same layout. | no bitfields |
 | `doomtype.h` | `boolean` is `int` over `<stdbool.h>` instead of `enum { false, true, undef }` (`undef` was unused). | `<stdbool.h>`'s `true`/`false` macros break the enum in one translation unit |
 | `doomtype.h`, `m_misc.c`, 16 call sites | `strcasecmp`/`strncasecmp` (POSIX) replaced by DOOM's own `M_StrCaseCmp`/`M_StrNCaseCmp`. | ISO C only |

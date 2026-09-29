@@ -5295,12 +5295,15 @@ extern cheatseq_t cheat_amap;
 // Automap colors
 // drawing stuff
 // scale on entry
+// (fixed_t)(.2*FRACUNIT), with FRACUNIT = 65536, truncated toward zero.
 // how much the automap moves window per tic in frame-buffer coordinates
 // moves 140 pixels in 1 second
 // how much zoom-in per tic
 // goes to 2x in 1 second
+// (int)(1.02*FRACUNIT), with FRACUNIT = 65536.
 // how much zoom-out per tic
 // pulls out to 0.5x in 1 second
+// (int)(FRACUNIT/1.02), with FRACUNIT = 65536.
 // translates between frame-buffer and map distances
 // translates between frame-buffer and map coordinates
 // the following is crap
@@ -5356,15 +5359,19 @@ mline_t cheat_player_arrow[] = {
     { { ((8*16*(1<<16))/7)/6, -((8*16*(1<<16))/7)/7 }, { ((8*16*(1<<16))/7)/6+((8*16*(1<<16))/7)/32, -((8*16*(1<<16))/7)/7-((8*16*(1<<16))/7)/32 } },
     { { ((8*16*(1<<16))/7)/6+((8*16*(1<<16))/7)/32, -((8*16*(1<<16))/7)/7-((8*16*(1<<16))/7)/32 }, { ((8*16*(1<<16))/7)/6+((8*16*(1<<16))/7)/10, -((8*16*(1<<16))/7)/7 } }
 };
+// Resolved (fixed_t)(+/-.867*R) = +/-56819 and
+// (fixed_t)(-.5*R) = -32768, with R = 65536; casts truncate toward zero.
 mline_t triangle_guy[] = {
-    { { (fixed_t)(-.867*((1<<16))), (fixed_t)(-.5*((1<<16))) }, { (fixed_t)(.867*((1<<16)) ), (fixed_t)(-.5*((1<<16))) } },
-    { { (fixed_t)(.867*((1<<16)) ), (fixed_t)(-.5*((1<<16))) }, { (fixed_t)(0 ), (fixed_t)(((1<<16)) ) } },
-    { { (fixed_t)(0 ), (fixed_t)(((1<<16)) ) }, { (fixed_t)(-.867*((1<<16))), (fixed_t)(-.5*((1<<16))) } }
+    { { -56819, -32768 }, { 56819, -32768 } },
+    { { 56819, -32768 }, { (fixed_t)(0), (fixed_t)(((1<<16))) } },
+    { { (fixed_t)(0), (fixed_t)(((1<<16))) }, { -56819, -32768 } }
 };
+// Resolved (fixed_t)(-.5*R) = -32768 and
+// (fixed_t)(+/-.7*R) = +/-45875, with R = 65536; casts truncate toward zero.
 mline_t thintriangle_guy[] = {
-    { { (fixed_t)(-.5*((1<<16))), (fixed_t)(-.7*((1<<16))) }, { (fixed_t)(((1<<16)) ), (fixed_t)(0 ) } },
-    { { (fixed_t)(((1<<16)) ), (fixed_t)(0 ) }, { (fixed_t)(-.5*((1<<16))), (fixed_t)(.7*((1<<16)) ) } },
-    { { (fixed_t)(-.5*((1<<16))), (fixed_t)(.7*((1<<16)) ) }, { (fixed_t)(-.5*((1<<16))), (fixed_t)(-.7*((1<<16))) } }
+    { { -32768, -45875 }, { (fixed_t)(((1<<16))), (fixed_t)(0) } },
+    { { (fixed_t)(((1<<16))), (fixed_t)(0) }, { -32768, 45875 } },
+    { { -32768, 45875 }, { -32768, -45875 } }
 };
 static int cheating = 0;
 static int grid = 0;
@@ -5409,7 +5416,7 @@ static fixed_t old_m_x, old_m_y;
 // old location used by the Follower routine
 static mpoint_t f_oldloc;
 // used by MTOF to scale from map-to-frame-buffer coords
-static fixed_t scale_mtof = (fixed_t)(.2*(1<<16));
+static fixed_t scale_mtof = (fixed_t)13107;
 // used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
 static fixed_t scale_ftom;
 static player_t *am_plr; // the player represented by an arrow
@@ -5630,7 +5637,8 @@ void AM_LevelInit(void)
     f_h = finit_height;
     AM_clearMarks();
     AM_findMinMaxBoundaries();
-    scale_mtof = FixedDiv(min_scale_mtof, (int) (0.7*(1<<16)));
+    // (int)(0.7*FRACUNIT) = 45875, with FRACUNIT = 65536.
+    scale_mtof = FixedDiv(min_scale_mtof, 45875);
     if (scale_mtof > max_scale_mtof)
  scale_mtof = min_scale_mtof;
     scale_ftom = FixedDiv((1<<16), scale_mtof);
@@ -5728,13 +5736,13 @@ AM_Responder
         }
         else if (key == key_map_zoomout) // zoom out
         {
-            mtof_zoommul = ((int) ((1<<16)/1.02));
-            ftom_zoommul = ((int) (1.02*(1<<16)));
+            mtof_zoommul = 64250;
+            ftom_zoommul = 66846;
         }
         else if (key == key_map_zoomin) // zoom in
         {
-            mtof_zoommul = ((int) (1.02*(1<<16)));
-            ftom_zoommul = ((int) ((1<<16)/1.02));
+            mtof_zoommul = 66846;
+            ftom_zoommul = 64250;
         }
         else if (key == key_map_toggle)
         {
