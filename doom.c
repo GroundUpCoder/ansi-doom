@@ -775,7 +775,7 @@ extern cheatseq_t cheat_ammo;
 extern cheatseq_t cheat_ammonokey;
 extern cheatseq_t cheat_noclip;
 extern cheatseq_t cheat_commercial_noclip;
-extern cheatseq_t cheat_powerup[7];
+cheatseq_t cheat_powerup[7];
 extern cheatseq_t cheat_choppers;
 extern cheatseq_t cheat_clev;
 extern cheatseq_t cheat_mypos;
@@ -871,13 +871,13 @@ fixed_t FixedMul (fixed_t a, fixed_t b);
 fixed_t FixedDiv (fixed_t a, fixed_t b);
 // 0x100000000 to 0x2000
 // Effective size is 10240.
-extern const fixed_t finesine[5*8192/4];
+const fixed_t finesine[5*8192/4];
 // Re-use data, is just PI/2 pahse shift.
 extern const fixed_t *finecosine;
 // Effective size is 4096.
-extern const fixed_t finetangent[8192/2];
+const fixed_t finetangent[8192/2];
 // Gamma correction tables.
-extern const byte gammatable[5][256];
+const byte gammatable[5][256];
 // Binary Angle Measument, BAM.
 // Heretic code uses this definition as though it represents one 
 // degree, but it is not!  This is actually ~1.40 degrees.
@@ -885,7 +885,7 @@ typedef unsigned angle_t;
 // Effective size is 2049;
 // The +1 size is to handle the case when x==y
 //  without additional checking.
-extern const angle_t tantoangle[2048 +1];
+const angle_t tantoangle[2048 +1];
 // Utility function,
 //  called by R_PointToAngle.
 int SlopeDiv(unsigned int num, unsigned int den);
@@ -2295,8 +2295,8 @@ typedef struct
     int misc1;
     int misc2;
 } state_t;
-extern state_t states[NUMSTATES];
-extern char *sprnames[];
+state_t states[NUMSTATES];
+char *sprnames[139];
 typedef enum {
     MT_PLAYER,
     MT_POSSESSED,
@@ -2463,7 +2463,7 @@ typedef struct
     int flags;
     int raisestate;
 } mobjinfo_t;
-extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
+mobjinfo_t mobjinfo[NUMMOBJTYPES];
 //
 // NOTES: mobj_t
 //
@@ -3176,7 +3176,7 @@ typedef struct
     int atkstate;
     int flashstate;
 } weaponinfo_t;
-extern weaponinfo_t weaponinfo[NUMWEAPONS];
+weaponinfo_t weaponinfo[NUMWEAPONS];
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
@@ -3638,8 +3638,8 @@ extern angle_t viewangle;
 extern player_t* viewplayer;
 // ?
 extern angle_t clipangle;
-extern int viewangletox[8192/2];
-extern angle_t xtoviewangle[320 +1];
+int viewangletox[8192/2];
+angle_t xtoviewangle[320 +1];
 //extern fixed_t		finetangent[FINEANGLES/2];
 extern fixed_t rw_distance;
 extern angle_t rw_normalangle;
@@ -3707,9 +3707,9 @@ extern int loopcount;
 //
 // Lighting constants.
 // Now why not 32 levels here?
-extern lighttable_t* scalelight[16][48];
-extern lighttable_t* scalelightfixed[48];
-extern lighttable_t* zlight[16][128];
+lighttable_t* scalelight[16][48];
+lighttable_t* scalelightfixed[48];
+lighttable_t* zlight[16][128];
 extern int extralight;
 extern lighttable_t* fixedcolormap;
 // Number of diminishing brightness levels.
@@ -3802,7 +3802,7 @@ extern boolean segtextured;
 extern boolean markfloor;
 extern boolean markceiling;
 extern boolean skymap;
-extern drawseg_t drawsegs[256];
+drawseg_t drawsegs[256];
 extern drawseg_t* ds_p;
 extern lighttable_t** hscalelight;
 extern lighttable_t** vscalelight;
@@ -3856,10 +3856,10 @@ extern short* lastopening;
 typedef void (*planefunction_t) (int top, int bottom);
 extern planefunction_t floorfunc;
 extern planefunction_t ceilingfunc_t;
-extern short floorclip[320];
-extern short ceilingclip[320];
-extern fixed_t yslope[200];
-extern fixed_t distscale[320];
+short floorclip[320];
+short ceilingclip[320];
+fixed_t yslope[200];
+fixed_t distscale[320];
 void R_InitPlanes (void);
 void R_ClearPlanes (void);
 void
@@ -3903,13 +3903,13 @@ R_CheckPlane
 // DESCRIPTION:
 //	Rendering of moving objects, sprites.
 //
-extern vissprite_t vissprites[128];
+vissprite_t vissprites[128];
 extern vissprite_t* vissprite_p;
 extern vissprite_t vsprsortedhead;
 // Constant arrays used for psprite clipping
 //  and initializing clipping.
-extern short negonearray[320];
-extern short screenheightarray[320];
+short negonearray[320];
+short screenheightarray[320];
 // vars for R_DrawMaskedColumn
 extern short* mfloorclip;
 extern short* mceilingclip;
@@ -4029,8 +4029,8 @@ void P_PlayerThink (player_t* player);
 // P_MOBJ
 //
 // Time interval for item respawning.
-extern mapthing_t itemrespawnque[128];
-extern int itemrespawntime[128];
+mapthing_t itemrespawnque[128];
+int itemrespawntime[128];
 extern int iquehead;
 extern int iquetail;
 void P_RespawnSpecials (void);
@@ -4072,7 +4072,7 @@ typedef struct
     } d;
 } intercept_t;
 // Extended MAXINTERCEPTS, to allow for intercepts overrun emulation.
-extern intercept_t intercepts[(128 + 61)];
+intercept_t intercepts[(128 + 61)];
 extern intercept_t* intercept_p;
 typedef boolean (*traverser_t) (intercept_t *in);
 fixed_t P_AproxDistance (fixed_t dx, fixed_t dy);
@@ -4115,7 +4115,7 @@ extern line_t* ceilingline;
 //
 // We keep the original limit, to detect what variables in memory were
 // overwritten (see SpechitOverrun())
-extern line_t* spechit[20];
+line_t* spechit[20];
 extern int numspechit;
 boolean P_CheckPosition (mobj_t *thing, fixed_t x, fixed_t y);
 boolean P_TryMove (mobj_t* thing, fixed_t x, fixed_t y);
@@ -4156,8 +4156,8 @@ extern mobj_t** blocklinks; // for thing chains
 //
 // P_INTER
 //
-extern int maxammo[NUMAMMO];
-extern int clipammo[NUMAMMO];
+int maxammo[NUMAMMO];
+int clipammo[NUMAMMO];
 void
 P_TouchSpecialThing
 ( mobj_t* special,
@@ -4339,7 +4339,7 @@ typedef struct
  // max # of wall switches in a level
  // 4 players, 4 buttons each at once, max.
  // 1 second, in ticks. 
-extern button_t buttonlist[16];
+button_t buttonlist[16];
 void
 P_ChangeSwitchTexture
 ( line_t* line,
@@ -4378,7 +4378,7 @@ typedef struct
     int tag;
     plattype_e type;
 } plat_t;
-extern plat_t* activeplats[30];
+plat_t* activeplats[30];
 void T_PlatRaise(plat_t* plat);
 int
 EV_DoPlat
@@ -4464,7 +4464,7 @@ typedef struct
     int tag;
     int olddirection;
 } ceiling_t;
-extern ceiling_t* activeceilings[30];
+ceiling_t* activeceilings[30];
 int
 EV_DoCeiling
 ( line_t* line,
@@ -4695,7 +4695,7 @@ extern int key_invdrop;
 extern int key_message_refresh;
 extern int key_pause;
 extern int key_multi_msg;
-extern int key_multi_msgplayer[8];
+int key_multi_msgplayer[8];
 extern int key_weapon1;
 extern int key_weapon2;
 extern int key_weapon3;
@@ -4896,7 +4896,7 @@ void I_PrintDivider(void);
 //
 // VIDEO
 //
-extern int dirtybox[4];
+int dirtybox[4];
 extern byte *tinttable;
 // haleyjd 08/28/10: implemented for Strife support
 // haleyjd 08/28/10: Patch clipping callback, implemented to support Choco
@@ -5139,14 +5139,14 @@ extern gamestate_t gamestate;
 //  according to user inputs. Partly load from
 //  WAD, partly set at startup time.
 // Bookkeeping on players - state.
-extern player_t players[4];
+player_t players[4];
 // Alive? Disconnected?
-extern boolean playeringame[4];
+boolean playeringame[4];
 // Player spawn spots for deathmatch.
-extern mapthing_t deathmatchstarts[10];
+mapthing_t deathmatchstarts[10];
 extern mapthing_t* deathmatch_p;
 // Player spawn spots.
-extern mapthing_t playerstarts[4];
+mapthing_t playerstarts[4];
 // Intermission stats.
 // Parameters for world map / intermission.
 extern wbstartstruct_t wminfo;
@@ -5155,7 +5155,7 @@ extern wbstartstruct_t wminfo;
 //
 // File handling stuff.
 extern char * savegamedir;
-extern char basedefault[1024];
+char basedefault[1024];
 // if true, load all graphics at level load
 extern boolean precache;
 // wipegamestate can be set to -1
@@ -5259,8 +5259,8 @@ extern ticcmd_t *netcmds;
 // Misc. other strings.
 // QuitDOOM messages
 // 8 per each game type
-extern char *doom1_endmsg[];
-extern char *doom2_endmsg[];
+char *doom1_endmsg[8];
+char *doom2_endmsg[8];
 
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
@@ -5332,7 +5332,7 @@ typedef struct
 //  A line drawing of the player pointing right,
 //   starting from the middle.
 //
-mline_t player_arrow[] = {
+mline_t player_arrow[7] = {
     { { -((8*16*(1<<16))/7)+((8*16*(1<<16))/7)/8, 0 }, { ((8*16*(1<<16))/7), 0 } }, // -----
     { { ((8*16*(1<<16))/7), 0 }, { ((8*16*(1<<16))/7)-((8*16*(1<<16))/7)/2, ((8*16*(1<<16))/7)/4 } }, // ----->
     { { ((8*16*(1<<16))/7), 0 }, { ((8*16*(1<<16))/7)-((8*16*(1<<16))/7)/2, -((8*16*(1<<16))/7)/4 } },
@@ -5341,7 +5341,7 @@ mline_t player_arrow[] = {
     { { -((8*16*(1<<16))/7)+3*((8*16*(1<<16))/7)/8, 0 }, { -((8*16*(1<<16))/7)+((8*16*(1<<16))/7)/8, ((8*16*(1<<16))/7)/4 } }, // >>--->
     { { -((8*16*(1<<16))/7)+3*((8*16*(1<<16))/7)/8, 0 }, { -((8*16*(1<<16))/7)+((8*16*(1<<16))/7)/8, -((8*16*(1<<16))/7)/4 } }
 };
-mline_t cheat_player_arrow[] = {
+mline_t cheat_player_arrow[16] = {
     { { -((8*16*(1<<16))/7)+((8*16*(1<<16))/7)/8, 0 }, { ((8*16*(1<<16))/7), 0 } }, // -----
     { { ((8*16*(1<<16))/7), 0 }, { ((8*16*(1<<16))/7)-((8*16*(1<<16))/7)/2, ((8*16*(1<<16))/7)/6 } }, // ----->
     { { ((8*16*(1<<16))/7), 0 }, { ((8*16*(1<<16))/7)-((8*16*(1<<16))/7)/2, -((8*16*(1<<16))/7)/6 } },
@@ -5361,14 +5361,14 @@ mline_t cheat_player_arrow[] = {
 };
 // Resolved (fixed_t)(+/-.867*R) = +/-56819 and
 // (fixed_t)(-.5*R) = -32768, with R = 65536; casts truncate toward zero.
-mline_t triangle_guy[] = {
+mline_t triangle_guy[3] = {
     { { -56819, -32768 }, { 56819, -32768 } },
     { { 56819, -32768 }, { (fixed_t)(0), (fixed_t)(((1<<16))) } },
     { { (fixed_t)(0), (fixed_t)(((1<<16))) }, { -56819, -32768 } }
 };
 // Resolved (fixed_t)(-.5*R) = -32768 and
 // (fixed_t)(+/-.7*R) = +/-45875, with R = 65536; casts truncate toward zero.
-mline_t thintriangle_guy[] = {
+mline_t thintriangle_guy[3] = {
     { { -32768, -45875 }, { (fixed_t)(((1<<16))), (fixed_t)(0) } },
     { { (fixed_t)(((1<<16))), (fixed_t)(0) }, { -32768, 45875 } },
     { { -32768, 45875 }, { -32768, -45875 } }
@@ -5868,7 +5868,7 @@ void AM_updateLightLev(void)
 {
     static int nexttic = 0;
     //static int litelevels[] = { 0, 3, 5, 6, 6, 7, 7, 7 };
-    static int litelevels[] = { 0, 4, 7, 10, 12, 14, 15, 15 };
+    static int litelevels[8] = { 0, 4, 7, 10, 12, 14, 15, 15 };
     static int litelevelscnt = 0;
     // Change light level
     if (amclock>nexttic)
@@ -6249,7 +6249,7 @@ void AM_drawPlayers(void)
 {
     int i;
     player_t* p;
-    static int their_colors[] = { (7*16), (6*16), (4*16), (256-5*16) };
+    static int their_colors[4] = { (7*16), (6*16), (4*16), (256-5*16) };
     int their_color = -1;
     int color;
     if (!netgame)
@@ -7060,7 +7060,7 @@ const char *M_GetStrVariable(char *name);
 void M_SetConfigFilenames(char *main_config, char *extra_config);
 char *M_GetSaveGameDir(char *iwadname);
 extern char *configdir;
-static const iwad_t iwads[] =
+static const iwad_t iwads[14] =
 {
     { "doom2.wad", doom2, commercial, "Doom II" },
     { "plutonia.wad", pack_plut, commercial, "Final Doom: Plutonia Experiment" },
@@ -8613,7 +8613,7 @@ void HU_Ticker(void);
 void HU_Drawer(void);
 char HU_dequeueChatChar(void);
 void HU_Erase(void);
-extern char *chat_macros[10];
+char *chat_macros[10];
  /*
 
  Copyright(C) 2005-2014 Simon Howard
@@ -8837,9 +8837,9 @@ extern int opl_io_port;
 extern char *timidity_cfg_path;
 
 // the complete set of sound effects
-extern sfxinfo_t S_sfx[];
+sfxinfo_t S_sfx[109];
 // the complete set of music
-extern musicinfo_t S_music[];
+musicinfo_t S_music[68];
 //
 // Identifiers for all music in game.
 //
@@ -9205,7 +9205,7 @@ byte consistancy[4][128];
 fixed_t forwardmove[2] = {0x19, 0x32};
 fixed_t sidemove[2] = {0x18, 0x28};
 fixed_t angleturn[3] = {640, 1280, 320}; // + slow turn 
-static int *weapon_keys[] = {
+static int *weapon_keys[8] = {
     &key_weapon1,
     &key_weapon2,
     &key_weapon3,
@@ -9222,7 +9222,7 @@ static const struct
 {
     weapontype_t weapon;
     weapontype_t weapon_num;
-} weapon_order_table[] = {
+} weapon_order_table[9] = {
     { wp_fist, wp_fist },
     { wp_chainsaw, wp_fist },
     { wp_pistol, wp_pistol },
@@ -11131,7 +11131,7 @@ char *chat_macros[10] =
     "I'll take care of it.",
     "Yes"
 };
-char* player_names[] =
+char* player_names[4] =
 {
     "Green: ",
     "Indigo: ",
@@ -11158,7 +11158,7 @@ static boolean headsupactive = false;
 // Builtin map names.
 // The actual names can be found in DStrings.h.
 //
-char* mapnames[] = // DOOM shareware/registered/retail (Ultimate) names.
+char* mapnames[45] = // DOOM shareware/registered/retail (Ultimate) names.
 {
     "E1M1: Hangar",
     "E1M2: Nuclear Plant",
@@ -11211,7 +11211,7 @@ char* mapnames[] = // DOOM shareware/registered/retail (Ultimate) names.
 // single large array; WADs like pl2.wad have a MAP33, and rely on
 // the layout in the Vanilla executable, where it is possible to
 // overflow the end of one array into the next.
-char *mapnames_commercial[] =
+char *mapnames_commercial[96] =
 {
     // DOOM 2 map names.
     "level 1: entryway",
@@ -11631,7 +11631,7 @@ boolean HU_Responder(event_t *ev)
 //	Sliders and icons. Kinda widget stuff.
 //
 // Data.
-extern patch_t* hu_font[('_' - '!' + 1)];
+patch_t* hu_font[('_' - '!' + 1)];
 extern boolean message_dontfuckwithme;
 extern boolean chat_on; // in heads-up code
 //
@@ -11771,7 +11771,7 @@ enum
     quitdoom,
     main_end
 } main_e;
-menuitem_t MainMenu[]=
+menuitem_t MainMenu[6]=
 {
     {1,"M_NGAME",M_NewGame,'n'},
     {1,"M_OPTION",M_Options,'o'},
@@ -11801,7 +11801,7 @@ enum
     ep4,
     ep_end
 } episodes_e;
-menuitem_t EpisodeMenu[]=
+menuitem_t EpisodeMenu[4]=
 {
     {1,"M_EPI1", M_Episode,'k'},
     {1,"M_EPI2", M_Episode,'t'},
@@ -11829,7 +11829,7 @@ enum
     nightmare,
     newg_end
 } newgame_e;
-menuitem_t NewGameMenu[]=
+menuitem_t NewGameMenu[5]=
 {
     {1,"M_JKILL", M_ChooseSkill, 'i'},
     {1,"M_ROUGH", M_ChooseSkill, 'h'},
@@ -11861,7 +11861,7 @@ enum
     soundvol,
     opt_end
 } options_e;
-menuitem_t OptionsMenu[]=
+menuitem_t OptionsMenu[8]=
 {
     {1,"M_ENDGAM", M_EndGame,'e'},
     {1,"M_MESSG", M_ChangeMessages,'m'},
@@ -11889,7 +11889,7 @@ enum
     rdthsempty1,
     read1_end
 } read_e;
-menuitem_t ReadMenu1[] =
+menuitem_t ReadMenu1[1] =
 {
     {1,"",M_ReadThis2,0}
 };
@@ -11907,7 +11907,7 @@ enum
     rdthsempty2,
     read2_end
 } read_e2;
-menuitem_t ReadMenu2[]=
+menuitem_t ReadMenu2[1]=
 {
     {1,"",M_FinishReadThis,0}
 };
@@ -11931,7 +11931,7 @@ enum
     sfx_empty2,
     sound_end
 } sound_e;
-menuitem_t SoundMenu[]=
+menuitem_t SoundMenu[4]=
 {
     {2,"M_SFXVOL",M_SfxVol,'s'},
     {-1,"",0,'\0'},
@@ -11960,7 +11960,7 @@ enum
     load6,
     load_end
 } load_e;
-menuitem_t LoadMenu[]=
+menuitem_t LoadMenu[6]=
 {
     {1,"", M_LoadSelect,'1'},
     {1,"", M_LoadSelect,'2'},
@@ -11981,7 +11981,7 @@ menu_t LoadDef =
 //
 // SAVE GAME MENU
 //
-menuitem_t SaveMenu[]=
+menuitem_t SaveMenu[6]=
 {
     {1,"", M_SaveSelect,'1'},
     {1,"", M_SaveSelect,'2'},
@@ -13331,7 +13331,7 @@ void M_Init (void)
 //
 // Information about all the music
 //
-musicinfo_t S_music[] =
+musicinfo_t S_music[68] =
 {
     { NULL, 0, NULL, NULL },
     { "e1m1", 0, NULL, NULL },
@@ -13405,7 +13405,7 @@ musicinfo_t S_music[] =
 //
 // Information about all the sfx
 //
-sfxinfo_t S_sfx[] =
+sfxinfo_t S_sfx[109] =
 {
   // S_sfx[0] needs to be a dummy for odd reasons.
   { NULL, "none", 0, NULL, -1, -1, 0, 0, -1, NULL },
@@ -13652,7 +13652,7 @@ void S_Start(void)
     }
     else
     {
-        int spmus[]=
+        int spmus[9]=
         {
             // Song - Who? - Where?
             mus_e3m4, // American     e4m1
@@ -14448,7 +14448,7 @@ static const struct
 {
     GameMission_t mission;
     char *lumpname;
-} unique_lumps[] = {
+} unique_lumps[4] = {
     { doom, "POSSA1" },
     { heretic, "IMPXA1" },
     { hexen, "ETTNA1" },
@@ -15090,7 +15090,7 @@ void D_StartTitle (void)
 //
 // These are from the original source: some of them are perhaps
 // not used in any dehacked patches
-static char *banners[] =
+static char *banners[7] =
 {
     // doom2.wad
     "                         "
@@ -15165,7 +15165,7 @@ static void SetMissionForPackName(char *pack_name)
     {
         char *name;
         int mission;
-    } packs[] = {
+    } packs[3] = {
         { "doom2", doom2 },
         { "tnt", pack_tnt },
         { "plutonia", pack_plut },
@@ -15324,7 +15324,7 @@ static boolean D_AddFile(char *filename)
 // Copyright message banners
 // Some dehacked mods replace these.  These are only displayed if they are 
 // replaced by dehacked.
-static char *copyright_banners[] =
+static char *copyright_banners[3] =
 {
     "===========================================================================\n"
     "ATTENTION:  This version of DOOM has been modified.  If you would like to\n"
@@ -15365,7 +15365,7 @@ static struct
     char *description;
     char *cmdline;
     GameVersion_t version;
-} gameversions[] = {
+} gameversions[10] = {
     {"Doom 1.666", "1.666", exe_doom_1_666},
     {"Doom 1.7/1.7a", "1.7", exe_doom_1_7},
     {"Doom 1.8", "1.8", exe_doom_1_8},
@@ -15950,7 +15950,7 @@ static struct
     GameMode_t mode;
     int episode;
     int map;
-} valid_modes[] = {
+} valid_modes[13] = {
     { pack_chex, shareware, 1, 5 },
     { doom, shareware, 1, 9 },
     { doom, registered, 3, 9 },
@@ -16022,7 +16022,7 @@ int D_GetNumEpisodes(GameMission_t mission, GameMode_t mode)
 static struct {
     GameMission_t mission;
     GameVersion_t version;
-} valid_versions[] = {
+} valid_versions[10] = {
     { doom, exe_doom_1_9 },
     { doom, exe_hacx },
     { doom, exe_ultimate },
@@ -16448,7 +16448,7 @@ void doomgeneric_Create(int argc, char **argv)
 // DESCRIPTION:
 //	Globally defined strings.
 // 
-char *doom1_endmsg[] =
+char *doom1_endmsg[8] =
 {
   "are you sure you want to\nquit this great game?",
   "please don't leave, there's more\ndemons to toast!",
@@ -16459,7 +16459,7 @@ char *doom1_endmsg[] =
   "ya know, next time you come in here\ni'm gonna toast ya.",
   "go ahead and leave. see if i care.",
 };
-char *doom2_endmsg[] =
+char *doom2_endmsg[8] =
 {
   // QuitDOOM II messages
   "are you sure you want to\nquit this great game?",
@@ -16527,7 +16527,7 @@ void I_InitTimidityConfig(void)
 //
 
 // Data.
-char *sprnames[] = {
+char *sprnames[139] = {
     "TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
     "MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
     "PLSS","PLSE","MISL","BFS1","BFE1","BFE2","TFOG","IFOG","PLAY","POSS",
@@ -21054,7 +21054,7 @@ typedef struct
     char *background;
     char *text;
 } textscreen_t;
-static textscreen_t textscreens[] =
+static textscreen_t textscreens[22] =
 {
     { doom, 1, 8, "FLOOR4_8", "Once you beat the big badasses and\n""clean out the moon base you're supposed\n""to win, aren't you? Aren't you? Where's\n""your fat reward and ticket home? What\n""the hell is this? It's not supposed to\n""end this way!\n""\n" "It stinks like rotten meat, but looks\n""like the lost Deimos base.  Looks like\n""you're stuck on The Shores of Hell.\n""The only way out is through.\n""\n""To continue the DOOM experience, play\n""The Shores of Hell and its amazing\n""sequel, Inferno!\n"},
     { doom, 2, 8, "SFLR6_1", "You've done it! The hideous cyber-\n""demon lord that ruled the lost Deimos\n""moon base has been slain and you\n""are triumphant! But ... where are\n""you? You clamber to the edge of the\n""moon and look down to see the awful\n""truth.\n" "\n""Deimos floats above Hell itself!\n""You've never heard of anyone escaping\n""from Hell, but you'll make the bastards\n""sorry they ever heard of you! Quickly,\n""you rappel down to  the surface of\n""Hell.\n""\n" "Now, it's on to the final chapter of\n""DOOM! -- Inferno."},
@@ -21176,7 +21176,7 @@ void F_Ticker (void)
 //
 // F_TextWrite
 //
-extern patch_t *hu_font[('_' - '!' + 1)];
+patch_t *hu_font[('_' - '!' + 1)];
 void F_TextWrite (void)
 {
     byte* src;
@@ -21245,7 +21245,7 @@ typedef struct
     char *name;
     mobjtype_t type;
 } castinfo_t;
-castinfo_t castorder[] = {
+castinfo_t castorder[18] = {
     {"ZOMBIEMAN", MT_POSSESSED},
     {"SHOTGUN GUY", MT_SHOTGUY},
     {"HEAVY WEAPON DUDE", MT_CHAINGUY},
@@ -21830,7 +21830,7 @@ wipe_ScreenWipe
   int ticks )
 {
     int rc;
-    static int (*wipes[])(int, int, int) =
+    static int (*wipes[6])(int, int, int) =
     {
  wipe_initColorXForm, wipe_doColorXForm, wipe_exitColorXForm,
  wipe_initMelt, wipe_doMelt, wipe_exitMelt
@@ -22359,7 +22359,7 @@ int vanilla_keyboard_mapping = 1;
 // Is the shift key currently down?
 static int shiftdown = 0;
 // Lookup table for mapping AT keycodes to their doom keycode
-static const char at_to_doom[] =
+static const char at_to_doom[128] =
 {
     /* 0x00 */ 0x00,
     /* 0x01 */ 27,
@@ -22492,7 +22492,7 @@ static const char at_to_doom[] =
 };
 // Lookup table for mapping ASCII characters to their equivalent when
 // shift is pressed on an American layout keyboard:
-static const char shiftxform[] =
+static const char shiftxform[128] =
 {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
@@ -23859,7 +23859,7 @@ static int snd_sbirq = 0;
 static int snd_sbdma = 0;
 static int snd_mport = 0;
 // Compiled-in sound modules:
-static sound_module_t *sound_modules[] =
+static sound_module_t *sound_modules[1] =
 {
     NULL,
 };
@@ -24628,7 +24628,7 @@ void I_InitTimer(void)
 //
 //-----------------------------------------------------------------------------
 static const char
-rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
+rcsid[46] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 /* config.hin.  Generated from configure.ac by autoheader.  */
 /* Define to 1 if you have the <dev/isa/spkrio.h> header file. */
 /* Define to 1 if you have the <dev/speaker/speaker.h> header file. */
@@ -25140,7 +25140,7 @@ typedef struct
     char *filename;
 } default_collection_t;
 //! @begin_config_file default
-static default_t doom_defaults_list[] =
+static default_t doom_defaults_list[76] =
 {
     //!
     // Mouse sensitivity.  This value is used to multiply input mouse
@@ -25559,7 +25559,7 @@ static default_collection_t doom_defaults =
     NULL,
 };
 //! @begin_config_file extended
-static default_t extra_defaults_list[] =
+static default_t extra_defaults_list[119] =
 {
     //!
     // @game heretic hexen strife
@@ -27503,12 +27503,12 @@ typedef enum
 //
 // P_NewChaseDir related LUT.
 //
-dirtype_t opposite[] =
+dirtype_t opposite[9] =
 {
   DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST,
   DI_EAST, DI_NORTHEAST, DI_NORTH, DI_NORTHWEST, DI_NODIR
 };
-dirtype_t diags[] =
+dirtype_t diags[4] =
 {
     DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
 };
@@ -33542,7 +33542,7 @@ typedef struct
 // Almost all of the values to overwrite are 32-bit integers, except for
 // playerstarts, which is effectively an array of 16-bit integers and
 // must be treated differently.
-static intercepts_overrun_t intercepts_overrun[] =
+static intercepts_overrun_t intercepts_overrun[23] =
 {
     {4, NULL, false},
     {4, NULL, /* &earlyout, */ false},
@@ -36519,7 +36519,7 @@ typedef struct
     char startname[9];
     int speed;
 } animdef_t;
-extern anim_t anims[32];
+anim_t anims[32];
 extern anim_t* lastanim;
 //
 // P_InitPicAnims
@@ -36533,7 +36533,7 @@ extern anim_t* lastanim;
 //  and end entry, in the order found in
 //  the WAD file.
 //
-animdef_t animdefs[] =
+animdef_t animdefs[23] =
 {
     {false, "NUKAGE3", "NUKAGE1", 8},
     {false, "FWATER4", "FWATER1", 8},
@@ -36566,7 +36566,7 @@ anim_t* lastanim;
 //      Animating line specials
 //
 extern short numlinespecials;
-extern line_t* linespeciallist[64];
+line_t* linespeciallist[64];
 void P_InitPicAnims (void)
 {
     int i;
@@ -37691,7 +37691,7 @@ void P_SpawnSpecials (void)
 //
 // CHANGE THE TEXTURE OF A WALL SWITCH TO ITS OPPOSITE
 //
-switchlist_t alphSwitchList[] =
+switchlist_t alphSwitchList[41] =
 {
     // Doom shareware episode 1 switches
     {"SW1BRCOM", "SW2BRCOM", 1},
@@ -44430,12 +44430,12 @@ void ST_Init (void)
 
  */
 /* Par times for E1M1-E1M9. */
-static const int doom1_par_times[] =
+static const int doom1_par_times[9] =
 {
     30, 75, 120, 90, 165, 180, 180, 30, 165,
 };
 /* Par times for MAP01-MAP09. */
-static const int doom2_par_times[] =
+static const int doom2_par_times[9] =
 {
     30, 90, 120, 120, 90, 150, 120, 120, 270,
 };
@@ -47529,7 +47529,7 @@ extern wad_file_class_t stdc_wad_file;
 extern wad_file_class_t win32_wad_file;
 #endif
 */
-static wad_file_class_t *wad_file_classes[] =
+static wad_file_class_t *wad_file_classes[1] =
 {
 /*
 #ifdef _WIN32
@@ -47773,7 +47773,7 @@ static point_t lnodes[4][9] =
 // Using patches saves a lot of space,
 //  as they replace 320x200 full screen frames.
 //
-static wi_anim_t epsd0animinfo[] =
+static wi_anim_t epsd0animinfo[10] =
 {
     { (ANIM_ALWAYS), (35/3), (3), { (224), (104) }, (0), 0, { NULL, NULL, NULL }, 0, 0, 0, 0 },
     { (ANIM_ALWAYS), (35/3), (3), { (184), (160) }, (0), 0, { NULL, NULL, NULL }, 0, 0, 0, 0 },
@@ -47786,7 +47786,7 @@ static wi_anim_t epsd0animinfo[] =
     { (ANIM_ALWAYS), (35/3), (3), { (80), (16) }, (0), 0, { NULL, NULL, NULL }, 0, 0, 0, 0 },
     { (ANIM_ALWAYS), (35/3), (3), { (64), (24) }, (0), 0, { NULL, NULL, NULL }, 0, 0, 0, 0 },
 };
-static wi_anim_t epsd1animinfo[] =
+static wi_anim_t epsd1animinfo[9] =
 {
     { (ANIM_LEVEL), (35/3), (1), { (128), (136) }, (1), 0, { NULL, NULL, NULL }, 0, 0, 0, 0 },
     { (ANIM_LEVEL), (35/3), (1), { (128), (136) }, (2), 0, { NULL, NULL, NULL }, 0, 0, 0, 0 },
@@ -47798,7 +47798,7 @@ static wi_anim_t epsd1animinfo[] =
     { (ANIM_LEVEL), (35/3), (3), { (192), (144) }, (8), 0, { NULL, NULL, NULL }, 0, 0, 0, 0 },
     { (ANIM_LEVEL), (35/3), (1), { (128), (136) }, (8), 0, { NULL, NULL, NULL }, 0, 0, 0, 0 },
 };
-static wi_anim_t epsd2animinfo[] =
+static wi_anim_t epsd2animinfo[6] =
 {
     { (ANIM_ALWAYS), (35/3), (3), { (104), (168) }, (0), 0, { NULL, NULL, NULL }, 0, 0, 0, 0 },
     { (ANIM_ALWAYS), (35/3), (3), { (40), (136) }, (0), 0, { NULL, NULL, NULL }, 0, 0, 0, 0 },

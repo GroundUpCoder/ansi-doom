@@ -144,7 +144,7 @@ typedef struct
 //   starting from the middle.
 //
 #define R ((8*PLAYERRADIUS)/7)
-mline_t player_arrow[] = {
+mline_t player_arrow[7] = {
     { { -R+R/8, 0 }, { R, 0 } }, // -----
     { { R, 0 }, { R-R/2, R/4 } },  // ----->
     { { R, 0 }, { R-R/2, -R/4 } },
@@ -156,7 +156,7 @@ mline_t player_arrow[] = {
 #undef R
 
 #define R ((8*PLAYERRADIUS)/7)
-mline_t cheat_player_arrow[] = {
+mline_t cheat_player_arrow[16] = {
     { { -R+R/8, 0 }, { R, 0 } }, // -----
     { { R, 0 }, { R-R/2, R/6 } },  // ----->
     { { R, 0 }, { R-R/2, -R/6 } },
@@ -179,7 +179,7 @@ mline_t cheat_player_arrow[] = {
 #define R (FRACUNIT)
 // Resolved (fixed_t)(+/-.867*R) = +/-56819 and
 // (fixed_t)(-.5*R) = -32768, with R = 65536; casts truncate toward zero.
-mline_t triangle_guy[] = {
+mline_t triangle_guy[3] = {
     { { -56819, -32768 }, { 56819, -32768 } },
     { { 56819, -32768 }, { (fixed_t)(0), (fixed_t)(R) } },
     { { (fixed_t)(0), (fixed_t)(R) }, { -56819, -32768 } }
@@ -189,7 +189,7 @@ mline_t triangle_guy[] = {
 #define R (FRACUNIT)
 // Resolved (fixed_t)(-.5*R) = -32768 and
 // (fixed_t)(+/-.7*R) = +/-45875, with R = 65536; casts truncate toward zero.
-mline_t thintriangle_guy[] = {
+mline_t thintriangle_guy[3] = {
     { { -32768, -45875 }, { (fixed_t)(R), (fixed_t)(0) } },
     { { (fixed_t)(R), (fixed_t)(0) }, { -32768, 45875 } },
     { { -32768, 45875 }, { -32768, -45875 } }
@@ -794,7 +794,7 @@ void AM_updateLightLev(void)
 {
     static int nexttic = 0;
     //static int litelevels[] = { 0, 3, 5, 6, 6, 7, 7, 7 };
-    static int litelevels[] = { 0, 4, 7, 10, 12, 14, 15, 15 };
+    static int litelevels[8] = { 0, 4, 7, 10, 12, 14, 15, 15 };
     static int litelevelscnt = 0;
    
     // Change light level
@@ -1255,7 +1255,7 @@ void AM_drawPlayers(void)
 {
     int		i;
     player_t*	p;
-    static int 	their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
+    static int 	their_colors[4] = { GREENS, GRAYS, BROWNS, REDS };
     int		their_color = -1;
     int		color;
 

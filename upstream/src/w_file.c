@@ -37,7 +37,7 @@ extern wad_file_class_t win32_wad_file;
 extern wad_file_class_t posix_wad_file;
 #endif 
 
-static wad_file_class_t *wad_file_classes[] = 
+static wad_file_class_t *wad_file_classes[1] =
 {
 /*
 #ifdef _WIN32

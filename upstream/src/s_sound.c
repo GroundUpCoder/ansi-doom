@@ -212,7 +212,7 @@ void S_Start(void)
     }
     else
     {
-        int spmus[]=
+        int spmus[9]=
         {
             // Song - Who? - Where?
 

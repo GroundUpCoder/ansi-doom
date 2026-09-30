@@ -239,7 +239,7 @@ enum
     main_end
 } main_e;
 
-menuitem_t MainMenu[]=
+menuitem_t MainMenu[6]=
 {
     {1,"M_NGAME",M_NewGame,'n'},
     {1,"M_OPTION",M_Options,'o'},
@@ -273,7 +273,7 @@ enum
     ep_end
 } episodes_e;
 
-menuitem_t EpisodeMenu[]=
+menuitem_t EpisodeMenu[4]=
 {
     {1,"M_EPI1", M_Episode,'k'},
     {1,"M_EPI2", M_Episode,'t'},
@@ -304,7 +304,7 @@ enum
     newg_end
 } newgame_e;
 
-menuitem_t NewGameMenu[]=
+menuitem_t NewGameMenu[5]=
 {
     {1,"M_JKILL",	M_ChooseSkill, 'i'},
     {1,"M_ROUGH",	M_ChooseSkill, 'h'},
@@ -341,7 +341,7 @@ enum
     opt_end
 } options_e;
 
-menuitem_t OptionsMenu[]=
+menuitem_t OptionsMenu[8]=
 {
     {1,"M_ENDGAM",	M_EndGame,'e'},
     {1,"M_MESSG",	M_ChangeMessages,'m'},
@@ -372,7 +372,7 @@ enum
     read1_end
 } read_e;
 
-menuitem_t ReadMenu1[] =
+menuitem_t ReadMenu1[1] =
 {
     {1,"",M_ReadThis2,0}
 };
@@ -393,7 +393,7 @@ enum
     read2_end
 } read_e2;
 
-menuitem_t ReadMenu2[]=
+menuitem_t ReadMenu2[1]=
 {
     {1,"",M_FinishReadThis,0}
 };
@@ -420,7 +420,7 @@ enum
     sound_end
 } sound_e;
 
-menuitem_t SoundMenu[]=
+menuitem_t SoundMenu[4]=
 {
     {2,"M_SFXVOL",M_SfxVol,'s'},
     {-1,"",0,'\0'},
@@ -452,7 +452,7 @@ enum
     load_end
 } load_e;
 
-menuitem_t LoadMenu[]=
+menuitem_t LoadMenu[6]=
 {
     {1,"", M_LoadSelect,'1'},
     {1,"", M_LoadSelect,'2'},
@@ -475,7 +475,7 @@ menu_t  LoadDef =
 //
 // SAVE GAME MENU
 //
-menuitem_t SaveMenu[]=
+menuitem_t SaveMenu[6]=
 {
     {1,"", M_SaveSelect,'1'},
     {1,"", M_SaveSelect,'2'},

@@ -32,7 +32,7 @@ mkdir -p build build/empty-include/sys build/empty-include/SDL3
 for h in "${SYSTEM_HEADERS[@]}"; do : > "build/empty-include/$h"; done
 
 # Real system headers, for the checks.
-CHECKFLAGS=(-std=c99 -Wall -Werror=implicit-function-declaration -Wno-unused -Wno-parentheses -Wno-pointer-sign
+CHECKFLAGS=(-std=c99 -Wall -Werror=implicit-function-declaration -Werror=excess-initializers -Wno-unused -Wno-parentheses -Wno-pointer-sign
             -Wno-tautological-constant-out-of-range-compare -Wno-missing-braces
             -Wno-dangling-else -Wno-switch -Wno-empty-body -Wno-comment
             -Wno-unknown-pragmas -Wno-misleading-indentation
@@ -65,7 +65,10 @@ fi
 {
     cat header.txt
     # -C keeps comments; -P drops line markers. Blank-line runs are squeezed.
-    clang "${PPFLAGS[@]}" -E -P -C build/unity.c | cat -s
+    # In the unity file, a sized tentative definition reserves an array immediately.
+    # Keep extern in the original headers for separate-file compilation.
+    clang "${PPFLAGS[@]}" -E -P -C build/unity.c | cat -s |
+        sed -E 's/^extern ([^;(]*\[[^;]*);$/\1;/'
 } > ../doom.c
 
 clang "${CHECKFLAGS[@]}" -fsyntax-only ../doom.c

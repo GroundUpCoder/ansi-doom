@@ -107,17 +107,31 @@ attack-stop paths that the shareware demo cannot exercise.
 Counts are occurrences in `doom.c`.
 
 Present: `struct` (186), `union` (3), `enum` (60), `typedef` (195),
-`static` (487, file scope and function scope), `extern` (491), `switch`
+`static` (487, file scope and function scope), `extern` (444), `switch`
 (109), `do`/`while`/`for`/`break`/`continue`, `?:` (220),
 `sizeof` (219, on types and expressions), function pointers (including
 tables of them and calls through unions), variadic functions (44 `...`, 9
 `va_list`, standard `va_start`/`va_arg`/`va_end`), string literals with
-escapes, char literals, nested brace initializers, `extern int x[];`,
+escapes, char literals, nested brace initializers, explicitly sized arrays,
 multi-dimensional arrays, pointer arithmetic, casts, compound assignment,
 `++`/`--`, the comma operator, declarations after statements, one `for
 (int i ...)`, one octal literal, old-style declarations without a prototype
 (`void A_Look();` later defined with a parameter), and `extern int x;`
 followed by `int x;` in the same file.
+
+Every storage array has an explicit bound. Array parameters can still use
+`[]`, since they decay to pointers. In the generated unity file, the 47
+array `extern` declarations become sized tentative definitions. The first
+declaration therefore has enough information to allocate storage immediately;
+a later initializer reuses that address. This also handles `S_sfx` referring
+to itself. There are no mutually dependent global array initializers.
+The original headers retain `extern` for separate-file compilation.
+
+A speedrun compiler can allocate statics as it parses, emit constant stores
+in one startup function, and export the end of statics as the heap base.
+It needs no inferred array sizes, unresolved-address fixups, or data section.
+The kit also uses fixed 1KiB call frames; that is a compiler ABI choice,
+not a source transformation.
 
 Keywords that can be parsed and ignored: `const` (109), `register` (14),
 `inline` (15, on static functions), `signed`.
@@ -141,6 +155,7 @@ the patched one; `diff -ru upstream/orig upstream/src` shows everything.
 | `m_fixed.c` | `FixedMul`/`FixedDiv` rewritten with 32-bit unsigned math (16x16 split, shift-subtract division). Bit-exact with the `int64_t` originals (`upstream/test/fixed_test.c`, 20M random pairs). | no 64-bit ints |
 | `i_video.c/h`, `v_video.c`, `m_config.c/h`, `i_sound.c`, `g_game.c` | `mouse_acceleration` and `libsamplerate_scale` become `int`; `M_GetFloatVariable` and the float config cases removed; timedemo fps printed as an int. | no runtime floating point |
 | `am_map.c` | Automap triangle coordinates and scale/zoom constants resolved to integer values for `FRACUNIT = 65536`, preserving truncation toward zero. Original expressions are recorded in comments. Removes all 22 remaining floating-point literal occurrences from the amalgamated code. | no floating-point parsing or constant evaluation required |
+| Storage array declarations in `upstream/src/`, `build.sh` | All 54 inferred-size definitions and five incomplete declarations get explicit bounds. The generated unity file replaces array `extern` declarations with tentative definitions; headers retain `extern`. | allocate statics immediately, without address fixups |
 | `i_video.h` | `struct color` bitfields (`uint32_t r:8` ...) become `uint8_t` fields, same layout. | no bitfields |
 | `doomtype.h` | `boolean` is `int` over `<stdbool.h>` instead of `enum { false, true, undef }` (`undef` was unused). | `<stdbool.h>`'s `true`/`false` macros break the enum in one translation unit |
 | `doomtype.h`, `m_misc.c`, 16 call sites | `strcasecmp`/`strncasecmp` (POSIX) replaced by DOOM's own `M_StrCaseCmp`/`M_StrNCaseCmp`. | ISO C only |

@@ -224,7 +224,7 @@ static point_t lnodes[NUMEPISODES][NUMMAPS] =
      0, { NULL, NULL, NULL }, 0, 0, 0, 0 }
 
 
-static wi_anim_t epsd0animinfo[] =
+static wi_anim_t epsd0animinfo[10] =
 {
     ANIM(ANIM_ALWAYS, TICRATE/3, 3, 224, 104, 0),
     ANIM(ANIM_ALWAYS, TICRATE/3, 3, 184, 160, 0),
@@ -238,7 +238,7 @@ static wi_anim_t epsd0animinfo[] =
     ANIM(ANIM_ALWAYS, TICRATE/3, 3, 64, 24, 0),
 };
 
-static wi_anim_t epsd1animinfo[] =
+static wi_anim_t epsd1animinfo[9] =
 {
     ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 1),
     ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 2),
@@ -251,7 +251,7 @@ static wi_anim_t epsd1animinfo[] =
     ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 8),
 };
 
-static wi_anim_t epsd2animinfo[] =
+static wi_anim_t epsd2animinfo[6] =
 {
     ANIM(ANIM_ALWAYS, TICRATE/3, 3, 104, 168, 0),
     ANIM(ANIM_ALWAYS, TICRATE/3, 3, 40, 136, 0),

@@ -262,7 +262,7 @@ wipe_ScreenWipe
   int	ticks )
 {
     int rc;
-    static int (*wipes[])(int, int, int) =
+    static int (*wipes[6])(int, int, int) =
     {
 	wipe_initColorXForm, wipe_doColorXForm, wipe_exitColorXForm,
 	wipe_initMelt, wipe_doMelt, wipe_exitMelt

@@ -107,7 +107,7 @@ typedef struct
 
 //! @begin_config_file default
 
-static default_t	doom_defaults_list[] =
+static default_t	doom_defaults_list[76] =
 {
     //!
     // Mouse sensitivity.  This value is used to multiply input mouse
@@ -680,7 +680,7 @@ static default_collection_t doom_defaults =
 
 //! @begin_config_file extended
 
-static default_t extra_defaults_list[] =
+static default_t extra_defaults_list[119] =
 {
     //!
     // @game heretic hexen strife

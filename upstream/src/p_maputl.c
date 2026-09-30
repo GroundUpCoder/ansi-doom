@@ -750,7 +750,7 @@ typedef struct
 // playerstarts, which is effectively an array of 16-bit integers and
 // must be treated differently.
 
-static intercepts_overrun_t intercepts_overrun[] =
+static intercepts_overrun_t intercepts_overrun[23] =
 {
     {4,   NULL,                          false},
     {4,   NULL, /* &earlyout, */         false},

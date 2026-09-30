@@ -603,7 +603,7 @@ void D_StartTitle (void)
 // These are from the original source: some of them are perhaps
 // not used in any dehacked patches
 
-static char *banners[] =
+static char *banners[7] =
 {
     // doom2.wad
     "                         "
@@ -690,7 +690,7 @@ static void SetMissionForPackName(char *pack_name)
     {
         char *name;
         int mission;
-    } packs[] = {
+    } packs[3] = {
         { "doom2",    doom2 },
         { "tnt",      pack_tnt },
         { "plutonia", pack_plut },
@@ -879,7 +879,7 @@ static boolean D_AddFile(char *filename)
 // Some dehacked mods replace these.  These are only displayed if they are 
 // replaced by dehacked.
 
-static char *copyright_banners[] =
+static char *copyright_banners[3] =
 {
     "===========================================================================\n"
     "ATTENTION:  This version of DOOM has been modified.  If you would like to\n"
@@ -930,7 +930,7 @@ static struct
     char *description;
     char *cmdline;
     GameVersion_t version;
-} gameversions[] = {
+} gameversions[10] = {
     {"Doom 1.666",           "1.666",      exe_doom_1_666},
     {"Doom 1.7/1.7a",        "1.7",        exe_doom_1_7},
     {"Doom 1.8",             "1.8",        exe_doom_1_8},

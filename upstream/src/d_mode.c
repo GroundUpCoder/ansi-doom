@@ -29,7 +29,7 @@ static struct
     GameMode_t mode;
     int episode;
     int map;
-} valid_modes[] = {
+} valid_modes[13] = {
     { pack_chex, shareware,  1, 5 },
     { doom,      shareware,  1, 9 },
     { doom,      registered, 3, 9 },
@@ -119,7 +119,7 @@ int D_GetNumEpisodes(GameMission_t mission, GameMode_t mode)
 static struct {
     GameMission_t mission;
     GameVersion_t version;
-} valid_versions[] = {
+} valid_versions[10] = {
     { doom,     exe_doom_1_9 },
     { doom,     exe_hacx },
     { doom,     exe_ultimate },

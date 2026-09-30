@@ -32,7 +32,7 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
-static const iwad_t iwads[] =
+static const iwad_t iwads[14] =
 {
     { "doom2.wad",    doom2,     commercial, "Doom II" },
     { "plutonia.wad", pack_plut, commercial, "Final Doom: Plutonia Experiment" },

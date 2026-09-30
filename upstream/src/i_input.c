@@ -48,7 +48,7 @@ int vanilla_keyboard_mapping = 1;
 static int shiftdown = 0;
 
 // Lookup table for mapping AT keycodes to their doom keycode
-static const char at_to_doom[] =
+static const char at_to_doom[128] =
 {
     /* 0x00 */ 0x00,
     /* 0x01 */ KEY_ESCAPE,
@@ -182,7 +182,7 @@ static const char at_to_doom[] =
 
 // Lookup table for mapping ASCII characters to their equivalent when
 // shift is pressed on an American layout keyboard:
-static const char shiftxform[] =
+static const char shiftxform[128] =
 {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20,

@@ -67,7 +67,7 @@ static int snd_mport = 0;
 
 // Compiled-in sound modules:
 
-static sound_module_t *sound_modules[] = 
+static sound_module_t *sound_modules[1] =
 {
     #ifdef FEATURE_SOUND
     &DG_sound_module,

@@ -75,7 +75,7 @@ char *chat_macros[10] =
     HUSTR_CHATMACRO9
 };
 
-char*	player_names[] =
+char*	player_names[4] =
 {
     HUSTR_PLRGREEN,
     HUSTR_PLRINDIGO,
@@ -109,7 +109,7 @@ static boolean		headsupactive = false;
 // The actual names can be found in DStrings.h.
 //
 
-char*	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
+char*	mapnames[45] =	// DOOM shareware/registered/retail (Ultimate) names.
 {
 
     HUSTR_E1M1,
@@ -169,7 +169,7 @@ char*	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
 // the layout in the Vanilla executable, where it is possible to
 // overflow the end of one array into the next.
 
-char *mapnames_commercial[] =
+char *mapnames_commercial[96] =
 {
     // DOOM 2 map names.
 

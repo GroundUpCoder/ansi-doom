@@ -576,7 +576,7 @@ static const struct
 {
     GameMission_t mission;
     char *lumpname;
-} unique_lumps[] = {
+} unique_lumps[4] = {
     { doom,    "POSSA1" },
     { heretic, "IMPXA1" },
     { hexen,   "ETTNA1" },

@@ -65,7 +65,7 @@ typedef struct
     char *text;
 } textscreen_t;
 
-static textscreen_t textscreens[] =
+static textscreen_t textscreens[22] =
 {
     { doom,      1, 8,  "FLOOR4_8",  E1TEXT},
     { doom,      2, 8,  "SFLR6_1",   E2TEXT},
@@ -303,7 +303,7 @@ typedef struct
     mobjtype_t	type;
 } castinfo_t;
 
-castinfo_t	castorder[] = {
+castinfo_t	castorder[18] = {
     {CC_ZOMBIE, MT_POSSESSED},
     {CC_SHOTGUN, MT_SHOTGUY},
     {CC_HEAVY, MT_CHAINGUY},

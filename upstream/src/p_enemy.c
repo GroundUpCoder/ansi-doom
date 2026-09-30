@@ -60,13 +60,13 @@ typedef enum
 //
 // P_NewChaseDir related LUT.
 //
-dirtype_t opposite[] =
+dirtype_t opposite[9] =
 {
   DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST,
   DI_EAST, DI_NORTHEAST, DI_NORTH, DI_NORTHWEST, DI_NODIR
 };
 
-dirtype_t diags[] =
+dirtype_t diags[4] =
 {
     DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
 };
