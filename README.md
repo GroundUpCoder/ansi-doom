@@ -10,6 +10,8 @@ from-scratch C compilers: if your compiler builds `doom.c`, it runs DOOM.
   nine ISO C `#include`s at the top.
 - Everything platform-specific is behind seven `extern` functions declared
   right after the includes.
+- `lib.c` is an optional C library in the same subset, for a compiler that
+  has no headers or libc of its own.
 
 `doom1.wad` is the shareware IWAD (episode 1), included so that everything
 is in one place. See "License" below: it is id Software's data under the
@@ -65,7 +67,7 @@ Letters, digits and punctuation are their lowercase ASCII codes. The rest
 
 ### The C library
 
-41 functions and two variables, all standard: `abs atoi calloc exit fclose
+39 functions and two variables, all standard: `abs atoi calloc exit fclose
 fflush fopen fprintf fread free fseek ftell fwrite isspace malloc memcpy
 memmove memset printf putchar puts realloc remove rename snprintf sscanf
 strchr strcmp strdup strlen strncmp strncpy strrchr strstr system tolower
@@ -82,6 +84,44 @@ for a compiler's built-in headers. Semantics that matter for a minimal host:
 - `malloc`: a 6 MB zone at startup, the 1 MB screen buffer, and a few
   hundred small blocks. A bump allocator with a no-op `free` is enough.
 - `remove`, `rename`, `fflush`, `system`, `sscanf`: stubs are fine.
+
+### lib.c: the library as C
+
+A from-scratch compiler usually has no C library, and writing one in the host
+language is a second project. `lib.c` implements all 39 functions in the same
+C subset as `doom.c`: no floating point, 64-bit integers, bitfields, `goto` or
+macros, and only small stack frames. A compiler that can build `doom.c` can
+build its library.
+
+Compile `lib.c` followed by `doom.c` as one translation unit (`cat lib.c
+doom.c`) and skip every `#include` line. `lib.c` starts with what the headers
+would declare, as typedefs and enum constants (`size_t`, `uint32_t`, `NULL`,
+`true`, `INT_MAX`, `SEEK_SET`, ...), so the compiler needs no built-in headers
+or prototypes either. Only `<stdarg.h>` stays with the compiler: `va_list`,
+`va_start`, `va_arg`, `va_end`. It assumes the 4-byte `int`/`long`/pointer
+model below.
+
+The host then implements four functions instead of 39, next to the seven
+`DG_*` ones:
+
+```c
+void host_exit(int status);          /* stop the program; does not return */
+void host_print(const char *text);   /* append text to the log */
+int host_size(const char *name);     /* size of a file in bytes, -1 if absent */
+/* Copy up to count bytes starting at offset; return how many were copied. */
+int host_read(const char *name, void *buffer, int offset, int count);
+```
+
+| Area | How `lib.c` does it |
+|---|---|
+| `malloc` | Bump allocation from a static 32 MB array, with a size word before each block for `realloc`. `free` does nothing. Returns `NULL` when full. |
+| `printf` family | `vsnprintf` handles `%d %i %u %x %X %o %p %c %s %%` with `-`, `0`, width and precision. `printf`/`fprintf`/`puts`/`putchar` format into a static buffer and call `host_print`. |
+| `sscanf`, `atoi` | Whitespace, literal characters and `%d %i %u %x %o`. |
+| Files | A `FILE` is a name and a position; `fread` calls `host_read`. Read-only: `fopen` for writing returns `NULL`, `fwrite` writes nothing, `remove`/`rename` fail. No config files or savegames. |
+| `exit` | Calls `host_exit`. |
+
+With a native toolchain there is nothing to do: link the system C library as
+in the next section and leave `lib.c` out.
 
 ## Building and running
 
@@ -101,6 +141,10 @@ different gametic count. `upstream/test/run-tests.sh` runs it with
 It also checks fixed-point arithmetic, absence of `goto` and symbol collisions,
 and cast-finale timing (`upstream/test/cast_test.c`). The cast check covers
 attack-stop paths that the shareware demo cannot exercise.
+`lib.c` is checked twice with clang: `upstream/test/lib_test.c` runs its
+formatting, scanning, string, allocation and file functions natively, and
+`lib.c` followed by `doom.c` must pass a 32-bit syntax check with every system
+header empty except `<stdarg.h>`.
 
 ## What a compiler has to handle
 
@@ -130,6 +174,7 @@ The original headers retain `extern` for separate-file compilation.
 A speedrun compiler can allocate statics as it parses, emit constant stores
 in one startup function, and export the end of statics as the heap base.
 It needs no inferred array sizes, unresolved-address fixups, or data section.
+With `lib.c` the heap is itself a static array, so not even a heap base.
 The kit also uses fixed 1KiB call frames; that is a compiler ABI choice,
 not a source transformation.
 

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Rebuilds doom.c, checks for gotos/name collisions and cast-finale timing,
-# then checks it three ways:
+# Rebuilds doom.c, checks for gotos/name collisions, cast-finale timing and
+# lib.c, then checks doom.c three ways:
 #   1. FixedMul/FixedDiv (32-bit rewrite) against the 64-bit originals
 #   2. ~/git/c-compiler: compile doom.c + dg_sdl.c, run -timedemo demo1 headless
 #   3. system clang + SDL3: compile natively, run -timedemo demo1 with SDL's
@@ -28,6 +28,30 @@ echo "== cast-finale timing"
 clang -std=c99 -O1 -Wno-deprecated-non-prototype -Wno-pointer-to-int-cast \
       -Wno-absolute-value -Wno-switch -o build/cast_test test/cast_test.c
 ./build/cast_test
+
+echo "== lib.c"
+# Natively: lib.c and its test are one translation unit, with no system
+# headers except stdarg.h. -fno-builtin keeps clang from turning the byte
+# loops of memcpy/memset into calls to themselves.
+cat ../lib.c test/lib_test.c > build/lib_test.c
+clang -std=c99 -O0 -ffreestanding -fno-builtin -Wall -Wno-unused \
+      -Wno-non-literal-null-conversion -o build/lib_test build/lib_test.c
+./build/lib_test || { echo "FAIL: lib.c"; exit 1; }
+# With doom.c, as a 32-bit compiler without headers sees them: every system
+# header is empty except the compiler's own stdarg.h.
+mkdir -p build/lib-include
+for h in ctype.h limits.h stdbool.h stddef.h stdint.h stdio.h stdlib.h string.h; do
+    : > "build/lib-include/$h"
+done
+cat ../lib.c ../doom.c > build/lib_doom.c
+clang --target=i386-unknown-linux-gnu -std=c99 -ffreestanding -fno-builtin \
+      -nostdinc -Ibuild/lib-include -isystem "$(clang -print-resource-dir)/include" \
+      -fsyntax-only -Wall -Werror -Wno-unused -Wno-parentheses -Wno-pointer-sign \
+      -Wno-missing-braces -Wno-dangling-else -Wno-switch -Wno-empty-body \
+      -Wno-comment -Wno-self-assign -Wno-deprecated-non-prototype \
+      -Wno-tautological-constant-out-of-range-compare -Wno-misleading-indentation \
+      -Wno-non-literal-null-conversion build/lib_doom.c \
+      || { echo "FAIL: lib.c + doom.c"; exit 1; }
 
 echo "== 1. fixed-point math"
 {

@@ -4,7 +4,8 @@
 them. These files list, per header, the only declarations DOOM actually
 uses (from `nm -u` on the compiled file plus the types and macros it
 names). They are a specification for a compiler's built-in headers, not a
-libc: every function here is left for the host to implement. Everything
+libc: every function here is left for the host to implement, or taken from
+`lib.c` at the top of the repository, which replaces these headers too. Everything
 non-standard DOOM needs (video, keys, clock, sleep, mkdir) is the `DG_*`
 host interface declared at the top of `doom.c` itself.
 
